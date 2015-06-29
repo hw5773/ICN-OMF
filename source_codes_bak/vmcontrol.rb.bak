@@ -1,0 +1,99 @@
+module OmfRc::Util::Vmcontrol
+  include OmfRc::ResourceProxyDSL
+
+  SSH = "/usr/bin/ssh"
+
+  work :execute_cmd do |res,cmd,intro_msg,error_msg,success_msg|
+    logger.info "#{intro_msg} with: '#{cmd}'"
+    result = `#{cmd} 2>&1`
+    if $?.exitstatus != 0
+      res.log_inform_error "#{error_msg}: '#{result}'"
+      false
+    else
+      logger.info "#{success_msg}: '#{result}'"
+      true
+    end
+  end
+
+  work :get_ip do |res|
+    logger.info "#{res.property.vm_name}'s ip address is #{res.property.manageIP}"
+  end
+
+  work :set_ip do |res|
+    file = File.new("./nodeIPs")
+    
+    n = res.property.sn
+
+    while n > 0 do
+	line = file.gets
+	n = n - 1
+    end
+
+    list = line.split(" ")
+    res.property.manageIP = list[1]
+
+    logger.info "#{res.property.vm_name}'s ip address is set to #{res.property.manageIP}"
+  end
+
+  work :get_name do |res|
+    logger.info "the resource name is #{res.property.vm_name}"
+  end
+
+  work :ping_gw do |res|
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"ping -c 3 172.16.11.1\""
+    res.execute_cmd(cmd, "Ping to the gateway", "Failed", "Ping success!")
+  end
+
+  work :ccn_get_file do |res|
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile ccnx:/#{res.property.reponame}/test ./testfile\""
+    res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
+  end
+
+  work :ccn_put_file do |res|
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccnputfile ccnx:/snu.ac.kr/test test.txt\""
+    res.execute_cmd(cmd, "Putting the file to ccnx:/snu.ac.kr/test", "Failed", "ccnput success!")
+  end
+
+  work :ping_to do |res|
+    file = File.new("./nodeIPs")
+    n = res.property.sn
+
+    while n > 0 do
+        line = file.gets
+        n = n - 1
+    end
+
+    list = line.split(" ")
+
+    cmd = "ping -c 3 #{list[1]}"
+    res.execute_cmd(cmd, "Ping from #{res.property.sn} to #{res.property.target}", "Failed", "ping success!")
+  end
+
+  work :set_eth do |res|
+    file = File.new("./vmIPs")
+
+    line = file.gets
+
+    while !(line.length==2 and line[0]==res.property.sn.to_s) do
+      line = file.gets
+    end
+
+    cmds ||=[]
+
+    while line.length != 2 or line.length != 0 do
+      line = file.gets
+      list = line.split(" ")
+      cmds << " ifconfig #{list[2]} #{list[1]} netmask 255.255.255.0;"
+    end
+
+    add = ""
+
+    cmds.each do |c|
+       add = add + c
+    end
+
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP}" + cmds
+    res.execute_cmd(cmd, "Setting the ip address with " + cmd, "Failed", "Set ip success!")
+
+  end
+end

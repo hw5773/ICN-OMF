@@ -1,0 +1,37 @@
+import os
+import sys
+import string
+import pxssh
+
+secure = pxssh.pxssh()
+role = sys.argv[1]
+n = sys.argv[2]
+
+f = open('./nodeIPs', 'r')
+line = f.readline()
+d={}
+
+while line:
+	v = line.split(" ")
+	k = v[0]
+	d[k] = v[1][:-1]
+	line = f.readline()
+
+if role == "publisher":
+	os.system("sudo sshpass -p test scp -r ./ccnd.conf root@" + d[str(n)] + ":/root/.ccnx/ccnd.conf")
+	os.system("sudo sshpass -p test ssh -f -o StrictHostKeyChecking=no root@" + d[str(n)] + " \"ccndstart;export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccn_repo ccnx:/snu.ac.kr;ccnputfile ccnx:/snu.ac.kr/test /root/test.txt;\"")
+	print "setting vm" + str(n) + "\'s ccnd.conf file complete."
+
+elif role == "router":
+	os.system("sudo sshpass -p test scp -r ./ccnd.conf root@" + d[str(n)] + ":/root/.ccnx/ccnd.conf")
+	os.system("sudo sshpass -p test ssh -o StrictHostKeyChecking=no root@" + d[str(n)] + " \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile\"")
+	os.system("sudo sshpass -p test ssh -f -o StrictHostKeyChecking=no root@" + d[str(n)] + " \"ccndstart\"")
+	print "setting vm" + str(n) + "\'s ccnd.conf file complete."
+
+elif role == "subscriber":
+	os.system("sudo sshpass -p test scp -r ./ccnd.conf root@" + d[str(n)] + ":/root/.ccnx/ccnd.conf")
+	os.system("sudo sshpass -p test ssh -o StrictHostKeyChecking=no root@" + d[str(n)] + " \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;\"")
+	os.system("sudo sshpass -p test ssh -f -o StrictHostKeyChecking=no root@" + d[str(n)] + " \"ccndstart\"")
+	print "setting vm" + str(n) + "\'s ccnd.conf file complete."
+
+f.close()
