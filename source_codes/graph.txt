@@ -5,38 +5,13 @@ id	weight
 -
 */
 -
-pub	a	ccnx:/snu.ac.kr
-b	22
-c	9
-d	12
+pub	1	ccnx:/snu.ac.kr
+2	22
+3	9
 -
-rt	b
-c	35
-f	36
-h	34
+rt	2
+1	22
 -
-rt	c
-d	4
-e	65
-f	42
+sub	3
+1	9
 -
-rt	d
-e	33
-i	30
--
-sub	e
-f	18
-g	23
--
-rt	f
-g	39
-h	24
--
-rt	g
-h	25
-i	21
--
-pub	h	ccnx:/mmlab.snu.ac.kr
-i	19
--
-rt	i

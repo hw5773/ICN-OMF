@@ -1,5 +1,5 @@
 gfile = File.new("graph.txt", "r")
-pfile1 = File.new("repository_list", "w")
+pfile1 = File.new("./tmp/repository_list", "w")
 pfile2 = File.new("graph", "w")
 
 line_counter = 0

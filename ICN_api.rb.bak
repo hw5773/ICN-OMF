@@ -1,119 +1,388 @@
+prefix = ""
+
+if ARGV[-6].to_i > 0
+	prefix = ARGV[-8]
+elsif ARGV[-2].to_i > 0
+	prefix = ARGV[-4]
+else
+	prefix = ARGV[-2]
+end
+
+defEvent :prepare_1 do |state|
+	state.find_all do |v|
+		v[:uid] == 'vmgen' && v[:prepare] && v[:prepare] == 2
+	end.size >= 1
+end
+
+defEvent :prepare_2 do |state|
+	state.find_all do |v|
+		v[:uid] == 'vmgen' && v[:prepare] && v[:prepare] == 3
+	end.size >= 1
+end
+
+defEvent :prepare_3 do |state|
+	state.find_all do |v|
+		v[:uid] == 'vmgen' && v[:prepare] && v[:prepare] == 4
+	end.size >= 1
+end
+
+defEvent :prepare_4 do |state|
+	state.find_all do |v|
+		v[:uid] == 'vmgen' && v[:prepare] && v[:prepare] == 5
+	end.size >= 1
+end
+
+defEvent :prepare_gw_1 do |state|
+	state.find_all do |v|
+		v[:uid] == 'gwgen' && v[:prepare] && v[:prepare] == 2
+	end.size >= 1
+end
+
+defEvent :prepare_gw_2 do |state|
+	state.find_all do |v|
+		v[:uid] == 'gwgen' && v[:prepare] && v[:prepare] == 3
+	end.size >= 1
+end
+
+defEvent :prepare_gw_3 do |state|
+	state.find_all do |v|
+		v[:uid] == 'gwgen' && v[:prepare] && v[:prepare] == 4
+	end.size >= 1
+end
+
+defEvent :prepare_gw_4 do |state|
+	state.find_all do |v|
+		v[:uid] == 'gwgen' && v[:prepare] && v[:prepare] == 5
+	end.size >= 1
+end
+
+defEvent :vm_prepared do |state|
+	state.find_all do |v|
+		v[:type] == 'vm' && !v[:membership].empty?
+	end.size >= ARGV[-5].to_i
+end
+
+defEvent :xml_defined do |state|
+	state.find_all do |v|
+		v[:type] == 'vm' && v[:stage] && v[:stage] == 2
+	end.size >= ARGV[-5].to_i
+end
+
+defEvent :vm_run do |state|
+	state.find_all do |v|
+		v[:type] == 'vm' && v[:stage] && v[:stage] == 3
+	end.size >= ARGV[-5].to_i
+end
+
+defEvent :vm_ip_set do |state|
+	state.find_all do |v|
+		v[:type] == 'vm' && v[:stage] && v[:stage] == 4
+	end.size >= ARGV[-5].to_i
+end
+
+defEvent :vm_eth_set do |state|
+	state.find_all do |v|
+		v[:type] == 'vm' && v[:stage] && v[:stage] == 5
+	end.size >= ARGV[-5].to_i
+end
+
+defEvent :vm_rt_set do |state|
+	state.find_all do |v|
+		v[:type] == 'vm' && v[:stage] && v[:stage] == 6
+	end.size >= ARGV[-5].to_i
+end
+
+defEvent :vm_ccn_table_set do |state|
+	state.find_all do |v|
+		v[:type] == 'vm' && v[:stage] && v[:stage] == 7
+	end.size >= ARGV[-5].to_i
+end
+
+defEvent :vm_ccn_set do |state|
+	state.find_all do |v|
+		v[:type] == 'vm' && v[:stage] && v[:stage] == 8
+	end.size >= ARGV[-5].to_i
+end
+
+defEvent :gw_init do |state|
+	state.find_all do |v|
+		v[:type] == 'gw' && !v[:membership].empty?
+	end.size >= 1
+end
+
+defEvent :gw_prepared do |state|
+	state.find_all do |v|
+		v[:type] == 'gw' && v[:stage] && v[:stage] == 2
+	end.size >= 1
+
+defEvent :gw_run do |state|
+	state.find_all do |v|
+		v[:type] == 'gw' && v[:stage] && v[:stage] == 3
+	end.size >= 1
+end
+
+defEvent :gw_ip_set do |state|
+	state.find_all do |v|
+		v[:type] == 'gw' && v[:stage] && v[:stage] == 4
+	end.size >= 1
+end
+
+defEvent :gw_eth_set do |state|
+	state.find_all do |v|
+		v[:type] == 'gw' && v[:stage] && v[:stage] == 5
+	end.size >= 1
+end
+
+defEvent :gw_ccn_set do |state|
+	state.find_all do |v|
+		v[:type] == 'gw' && v[:stage] && v[:stage] == 6
+	end.size >= 1
+end
+
+defEvent :gw_set do |state|
+	state.find_all do |v|
+		v[:type] == 'gw' && v[:stage] && v[:stage] == 7
+	end.size >= 1
+end
+
+def gw_setting(g, from, to)
+	g.resources[uid: "gwgen"].act = "gateway_init"
+
+	onEvent :prepare_1 do
+#		g.create_resource("gw", type: 'gw', hrn: "gw", uid: "test0", sn: 0, vm_original_clone: "gw", vm_name: "gw"+Time.now.to_i.to_s, eth_ip: from, target_eth_ip: to, action: :clone_from)
+		g.create_resource("gw", type: 'gw', hrn: "gw", uid: "gw", sn: 0, vm_original_clone: "gw", vm_name: "gw", eth_ip: from, target_eth_ip: to, action: :attach)
+
+
+		onEvent :gw_init do
+			info "gateway is created"
+			info "now get the mac address"
+			g.resources[type: "gw", uid: "gw"].action = "get_mac"
+		end
+
+		onEvent :gw_prepared do
+			info "gateway creating is prepared"
+			info "now run the gateway"
+			g.resources[type: "gw", uid: "gw"].action = "run"
+		end
+
+		onEvent :gw_run do
+			info "gateway is run"
+			info "now set the management IP to the gateway"
+
+			g.resources[type: "gw", uid: "gw"].action = "set_ip"
+		end
+
+		onEvent :gw_ip_set do 
+			info "gateway's management ip is set"
+			info "now set the IP address to the ethernet"
+			g.resources[type: "gw", uid: "gw"].action = "eth" 
+		end
+
+		onEvent :gw_eth_set do
+			info "gateway's ethernet ip is set"
+			info "now set the ccn configuration file"
+			g.resources[type: "gw", uid: "gw"].role_set = "gateway"
+			g.resources[type: "gw", uid: "gw"].action = "ccn_table"
+		end
+
+		onEvent :gw_ccn_set do
+			info "gateway's ccn configuration is completed"
+			g.resources[type: "gw", uid: "gw"].action = "ccn"
+		end
+	end
+end
+
 def ccn_setting(g, a)
+	g.resources[uid: "vmgen"].id = ARGV[-8]
+	g.resources[uid: "vmgen"].node = ARGV[-5].to_i
+	g.resources[uid: "vmgen"].edge = ARGV[-4].to_i
+	g.resources[uid: "vmgen"].subnet = ARGV[-6].to_i
 
-	group('init').exec("sudo ./source_codes/clean.sh")
-	after 2 do
-		group('init').exec("sudo ./source_codes/graph.sh " + a[-5] + " " + a[-4])
-		info "Make the random graph"	
-	end
-
-	after 5 do
-		group('init').exec("sudo python ./source_codes/analysis.py")
-		info "Graph analysis is completed."
-	end
-	
-	after 10 do
-		group('init').exec("sudo python ./source_codes/routing.py " + a[-5])
-		info "Making the routing table is completed."
-	end
-
-
-	puts "now we are going to generate #{a[-5]} VMs."
-	arr = (1..a[-5].to_i).to_a
-	arr.each do |i|
-		after 45 * (i-1) do
-			createRsc(g, i)
+	g.resources[uid: "vmgen"].act = "graph_init"
+	onEvent :prepare_1 do
+		info "Graph Information Setting Complete."
+		if g.resources[uid: "vmgen"].property.mode == 0
+			g.resources[uid: "vmgen"].act = "graph_random"
+		elsif g.resources[uid: "vmgen"].property.mode == 1
+			g.resources[uid: "vmgen"].act = "graph_description"
+		else
+			g.resources[uid: "vmgen"].act = "plus"
 		end
 	end
 
-	t = a[-5].to_i
-
-	after 50 * t do
-		group('init').exec("sudo python ./source_codes/xmlgen.py #{a[-5]}")
-	end
-
-	after 50 * t + 15 do
-		group('init').exec("sudo rm /var/lib/dhcp/dhcpd.leases")
-
-		after 1 do
-			group('init').exec("sudo touch /var/lib/dhcp/dhcpd.leases")
-		end
-
-		after 2 do
-			group('init').exec("/etc/init.d/isc-dhcp-server restart")
+	onEvent :prepare_2 do
+		info "Virtual Machine Factory Setting Complete."
+		if not g.resources[uid: "vmgen"].mode == 2
+			g.resources[uid: "vmgen"].act = "routing_table"
+		else
+			g.resources[uid: "vmgen"].act = "plus"
 		end
 	end
 
-	after 50 * t + 25 do
-		arr.each do |j|
-			after 7 * j do
-				vm = g.resources[type: 'vm', hrn: 'vm'+j.to_s]
-				vm.action = 'run'
-			end
-		end
-	end
+	onEvent :prepare_3 do
+		arr = (1..ARGV[-5].to_i).to_a
+		pub = (1..ARGV[-3].to_i).to_a
+		rou = ((ARGV[-3].to_i+1)..(ARGV[-3].to_i+ARGV[-2].to_i)).to_a
+		sub = ((ARGV[-3].to_i+ARGV[-2].to_i+1)..(ARGV[-3].to_i+ARGV[-2].to_i+ARGV[-1].to_i))
+		prefix = ARGV[-8]
+#			g.create_resource("#{prefix}_#{i}", type: 'vm', hrn: "#{prefix}_#{i}", uid: "#{prefix}_#{i}", sn: i, vm_original_clone: "vm#{i}", vm_name: "#{prefix}_#{i}"+Time.now.to_i.to_s, action: :clone_from)
+		g.create_resource("vm#{i}",id: ARGV[-8], password: ARGV[-7], type: 'vm', hrn: "vm#{i}", uid: "#{prefix}_#{i}", sn: i, vm_original_clone: "vm#{i}", vm_name: "vm#{i}", action: :attach)
 
-	after 57 * t + 30 do
-		arr.each do |j|
-			after 5 * j do
-				vm = g.resources[type: 'vm', hrn: 'vm'+j.to_s]
-				vm.action = 'set_ip'
+		onEvent :vm_prepared do
+			info "#{ARGV[-5]} vms creating is prepared"
+			info "#{ARGV[-5]} vms are created. Now define them"
+			arr.each do |j|
+				g.resources[type: 'vm', uid: "#{prefix}_#{j}"].action = "xml_revise"
 			end
 		end
 
-		group('init').exec("sudo mv /root/.ssh/known_hosts /root/.ssh/known_hosts.bak")
-		group('init').exec("sudo touch /root/.ssh/known_hosts")
-		group('init').exec("sudo python ./source_codes/ccnd.py #{a[-3]} #{a[-2]} #{a[-1]}")
-		info "Making the ccnd configure file is completed."
-	end
-	
-	after 57 * (t + 1) + 10 do
-		arr.each do |j|
-			vm = g.resources[type: 'vm', hrn: 'vm'+j.to_s]
+		onEvent :xml_defined do
+			info "#{ARGV[-5]} vms are defined"
+			info "Now run them"
+			arr.each do |j|
+				g.resources[type: 'vm', uid: "#{prefix}_#{j}"].action = "run"
+			end
 		end
-		group('init').exec("sudo python ./source_codes/setccnd.py #{a[-3]} #{a[-2]} #{a[-1]}")
-		info "Setting the ccnd configure file for each node is completed."
-	end
 
-	after 57 * (t + 3) do
-		group('init').exec("sudo python ./source_codes/setRTs.py #{a[-5]}")
-		info "Setting the Routing Table for each node is completed."
-	end
+		onEvent :vm_run do
+			info "#{ARGV[-5]} vms are run. Now set the manage IPs"
+			arr.each do |j|
+				g.resources[type: 'vm', uid: "#{prefix}_#{j}"].action = "set_ip"
+			end
+		end
 
-	after 57 * (t + 4) do
-		group('init').exec("sudo python ./source_codes/setIPs.py")
-		info "Setting the ip address for each node is completed."
-	end
+		onEvent :vm_ip_set do
+			info "#{ARGV[-5]} vms' manage IPs are set. Now set ethernet IPs for them"
+			
+			arr.each do |j|
+				g.resources[type: 'vm', uid: "#{prefix}_#{j}"].action = "eth"
+			end
+		end
 
-	after 57 * (t + 2) do
-		arr.each do |j|
-			if j < a[-3].to_i and j>0
-				g.resources[type: 'vm', hrn: 'vm'+j.to_s].role = "publisher"
-			elsif j < (a[-2].to_i+a[-3].to_i) and j > (a[-3].to_i)
-				g.resources[type: 'vm', hrn: 'vm'+j.to_s].role = "router"
-			else
-				g.resources[type: 'vm', hrn: 'vm'+j.to_s].role = "subscriber"
+		onEvent :vm_eth_set do
+			info "#{ARGV[-5]} vms' ethernet IPs are set. Now set routing table for each vms"
+
+			arr.each do |j|
+				g.resources[type: 'vm', uid: "#{prefix}_#{j}"].action = "rt"
+			end
+		end
+
+		onEvent :vm_rt_set do
+			info "IP network is created"
+
+			pub.each do |j|
+				g.resources[type: 'vm', uid: "#{prefix}_#{j}"].role_set = "publisher"
+			end
+
+			rou.each do |j|
+				g.resources[type: 'vm', uid: "#{prefix}_#{j}"].role_set = "router"
+			end
+
+			sub.each do |j|
+				g.resources[type: 'vm', uid: "#{prefix}_#{j}"].role_set = "subscriber"
+			end
+
+			arr.each do |j|
+				g.resources[type: 'vm', uid: "#{prefix}_#{j}"].action = "ccn_table"
+			end
+		end
+
+		onEvent :vm_ccn_table_set do
+			info "CCN network table is created"
+
+			arr.each do |j|
+				g.resources[type: 'vm', uid: "#{prefix}_#{j}"].action = "ccn"
 			end
 		end
 	end			
 end
 
-def createRsc(g, c)	
+def create_vm(g, c)	
 	g.create_resource('vm'+c.to_s, type: 'vm', hrn: 'vm'+c.to_s, uid: 'vm'+c.to_s, vm_name: 'vm'+c.to_s+Time.now.to_i.to_s, sn: c, action: :clone_from)
 end
 
-def pingGW(g, c)
-	g.resources[type: 'vm', uid: 'test'+c.to_s].action = 'ping_gw'
+def ping_gw(g, c)
+	prefix = 0
+	if ARGV[-6].to_i > 0
+		prefix = ARGV[-8]
+	elsif ARGV[-2].to_i > 0
+		prefix = ARGV[-4]
+	else
+		prefix = ARGV[-2]
+	end
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].action = 'ping_gw'
 end
 
-def ccnput(g, c)
-	g.resources[type: 'vm', uid: 'test'+c.to_s].action = 'ccn_put'
+def ping_to(g, c, t)
+	prefix = 0
+	if ARGV[-6].to_i > 0
+		prefix = ARGV[-8]
+	elsif ARGV[-2].to_i > 0
+		prefix = ARGV[-4]
+	else
+		prefix = ARGV[-2]
+	end
+
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].target = t
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].action = 'ping_to'
 end
 
-def ccnget(g, c)
-	g.resources[type: 'vm', uid: 'test'+c.to_s].action = 'ccn_get'
+def ccn_put(g, c, cf)
+	prefix = 0
+	if ARGV[-6].to_i > 0
+		prefix = ARGV[-8]
+	elsif ARGV[-2].to_i > 0
+		prefix = ARGV[-4]
+	else
+		prefix = ARGV[-2]
+	end
+
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].put_file = cf
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].action = 'ccn_put'
 end
 
-def ccngetip(g, c, b)
-	g.resources[type: 'vm', uid: 'test'+c.to_s].back_address = b
-	g.resources[type: 'vm', uid: 'test'+c.to_s].action = 'ccn_get_ip'
+def ccn_get(g, c, tf, of)
+	prefix = ""
+	if ARGV[-6].to_i > 0
+		prefix = ARGV[-8]
+	elsif ARGV[-2].to_i > 0
+		prefix = ARGV[-4]
+	else
+		prefix = ARGV[-2]
+	end
+
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].target_file = tf
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].output_file = of
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].action = 'ccn_get'
+end
+
+def ccn_get_ip(g, c, tf, bid, bpw, baddr)
+	prefix = ""
+	if ARGV[-6].to_i > 0
+		prefix = ARGV[-8]
+	elsif ARGV[-2].to_i > 0
+		prefix = ARGV[-4]
+	else
+		prefix = ARGV[-2]
+	end
+
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].target_file = tf
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].back_id = bid
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].back_password = bpw
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].back_address = baddr
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].action = 'ccn_get_ip'
+end
+
+def ccn_get_ip_gw(g, c, b)
+	prefix = ""
+	if ARGV[-6].to_i > 0
+		prefix = ARGV[-8]
+	elsif ARGV[-2].to_i > 0
+		prefix = ARGV[-4]
+	else
+		prefix = ARGV[-2]
+	end
+
+	g.resources[type: 'gw', uid: "#{prefix}_#{c}"].back_address = b
+	g.resources[type: 'gw', uid: "#{prefix}_#{c}"].action = 'ccn_get_ip'
 end

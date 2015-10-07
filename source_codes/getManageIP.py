@@ -2,7 +2,7 @@ import sys
 import string
 
 f = open(sys.argv[1],'r')
-g = open('./nodeIPs', 'a')
+g = open('./tmp/nodeIPs', 'a')
 
 line = f.readline()
 index = line.find('172')

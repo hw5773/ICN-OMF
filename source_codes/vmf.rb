@@ -6,7 +6,7 @@ $stdout.sync = true
 op_mode = :development
 
 opts = {
-	communication: { url: 'xmpp://210.114.88.7' },
+	communication: { url: 'xmpp://147.46.216.250' },
 	eventloop: { type: :em },
 	logging: {
 		level: 'info'
@@ -17,7 +17,10 @@ module OmfRc::ResourceProxy::VMfactory
 	include OmfRc::ResourceProxyDSL
 
 	register_proxy :vmgen
+#	register_proxy "#{ARGV[0]}_vmf".to_sym
 	utility :common_tools
+	utility :vmcontrol
+	utility :graph_descriptor
 
 	hook :before_ready do |res|
 		res.property.vms_path ||= "/var/lib/libvirt/images"
@@ -34,12 +37,113 @@ module OmfRc::ResourceProxy::VMfactory
 		logger.info "Created new child VM: #{child_res.uid}"
 		res.property.vm_list << child_res.uid
 	end
+
+	property :node, :default => 3
+	property :edge, :default => 2
+	property :subnet, :default => 0
+	property :prepare, :default => 0
+	property :act, :default => :stop
+	property :id
+	property :target_file, :default => "ccnx:/snu.ac.kr/test.txt"
+	property :output_file, :default => "testfile"
+	property :graph_mode, :default => 0
+
+	configure :graph_mode do |res, value|
+		res.property.graph_mode = value
+		logger.info "graph mode is #{value}."
+	end
+
+	configure :target_file do |res, value|
+		res.property.target_file = value
+		logger.info "target file is set to #{value}."
+	end
+
+	configure :output_file do |res, value|
+		res.property.output_file = value
+		logger.info "output file is set to #{value}."
+	end
+
+	configure :node do |res, value|
+		res.property.node = value
+		logger.info "node is set to #{value}."
+	end
+
+	configure :edge do |res, value|
+		res.property.edge = value
+		logger.info "edge is set to #{value}."
+	end
+
+	configure :id do |res, value|
+		res.property.id = value
+		logger.info "id is set to #{value}."
+	end
+
+	configure :subnet do |res, value|
+		res.property.subnet = value
+		logger.info "subnet is set to #{value}."
+		res.property.prepare = res.property.prepare + 1
+		logger.info "stage is #{res.property.prepare}"
+		res.membership.each do |m|
+			res.inform(:status, {uid: res.uid, prepare: res.property.prepare.to_i}, res.membership_topics[m])
+		end
+	end
+
+	configure :act do |res, value|
+		logger.info "call #{value}"
+		res.send("#{value}")
+		res.property.act = value
+	end
+
+	work :plus do |res|
+		res.property.prepare = res.property.prepare + 1
+		logger.info "stage is #{res.property.prepare}"
+		res.membership.each do |m|
+			res.inform(:status, {uid: res.uid, prepare: res.property.prepare.to_i}, res.membership_topics[m])
+		end
+	end
+
+	work :graph_init do |res|
+		res.send("prepare")		
+		res.property.prepare = res.property.prepare + 1
+		logger.info "stage is #{res.property.prepare}"
+		res.membership.each do |m|
+			res.inform(:status, {uid: res.uid, prepare: res.property.prepare.to_i}, res.membership_topics[m])
+		end
+	end
+
+	work :graph_random do |res|
+		res.send("making_random_graph")
+		res.property.prepare = res.property.prepare + 1
+		logger.info "stage is #{res.property.prepare}"
+		res.membership.each do |m|
+			res.inform(:status, {uid: res.uid, prepare: res.property.prepare.to_i}, res.membership_topics[m])
+		end
+	end
+
+	work :graph_description do |res|
+		res.send("making_description")
+		res.property.prepare = res.property.prepare + 1
+		logger.info "stage is #{res.property.prepare}"
+		res.membership.each do |m|
+			res.inform(:status, {uid: res.uid, prepare: res.property.prepare.to_i}, res.membership_topics[m])
+		end
+	end
+
+	work :routing_table do |res|
+		res.send("making_tables")
+		res.property.prepare = res.property.prepare + 1
+		logger.info "stage is #{res.property.prepare}"
+		res.membership.each do |m|
+			res.inform(:status, {uid: res.uid, prepare: res.property.prepare.to_i}, res.membership_topics[m])
+		end
+	end
 end
 
 module OmfRc::ResourceProxy::VM
 	include OmfRc::ResourceProxyDSL
 
 	register_proxy :vm, :create_by => :vmgen
+#	register_proxy :vm, :create_by => "#{ARGV[0]}_vmf".to_sym
 	utility :common_tools
 	utility :libvirt
 	utility :vmbuilder
@@ -56,7 +160,7 @@ module OmfRc::ResourceProxy::VM
 	VM_DEF_DEFAULT = ""
 	VM_ORIGINAL_DEFAULT = "vm"
 	OMF_DEFAULT = Hashie::Mash.new({
-		server: '210.114.88.7',
+		server: '147.46.216.250',
 #		user: 'dhkim', password: 'mmlab2015',
 		topic: nil
 		})
@@ -83,14 +187,50 @@ module OmfRc::ResourceProxy::VM
 	property :manageIP, :default => ""
 	property :sn, :default => 0
 	property :target, :default => ""
-	property :reponame, :default => "snu.ac.kr"
+	property :repoName, :default => "ccnx:/snu.ac.kr"
 	property :numOfPort, :default => 0
 	property :vmIP, :default => []
 	property :vmRT, :default => []
+	property :macAddress, :default => ""
 
 	property :role
 	property :back
+	property :back_id
+	property :back_password
+
+	property :node, :default => 3
+	property :edge, :default => 2
+	property :subnet, :default => 0
 	property :stage, :default => 0
+	property :repoList, :default => []
+
+	property :id
+	property :password
+	property :ip, :default => "147.46.216.250"
+
+	property :target_file, :default => "ccnx:/snu.ac.kr/test.txt"
+	property :output_file, :default => "testfile"
+	property :put_file, :default => "test.txt"
+
+	configure :target_file do |res, value|
+		res.property.target_file = value
+		logger.info "target file is set to #{value}."
+	end
+
+	configure :output_file do |res, value|
+		res.property.output_file = value
+		logger.info "output file is set to #{value}."
+	end
+
+	configure :back_id do |res, value|
+		res.property.back_id = value
+		logger.info "the id to return is set to #{value}."
+	end
+
+	configure :back_password do |res, value|
+		res.property.back_password = value
+		logger.info "the password to return is set."
+	end
 
 	work :eth_vm do |res|
 		res.send("set_eth")
@@ -103,6 +243,24 @@ module OmfRc::ResourceProxy::VM
 
 	work :rt_vm do |res|
 		res.send("set_rt")
+		res.property.stage = res.property.stage + 1
+		logger.info "#{res.property.vm_name}'s stage is #{res.property.stage}"
+		res.membership.each do |m|
+			res.inform(:status, {uid: res.uid, stage: res.property.stage.to_i}, res.membership_topics[m])
+		end
+	end
+
+	work :xml_revise_vm do |res|
+		res.send("making_xml")
+		res.property.stage = res.property.stage + 1
+		logger.info "#{res.property.vm_name}'s stage is #{res.property.stage}"
+		res.membership.each do |m|
+			res.inform(:status, {uid: res.uid, stage: res.property.stage.to_i}, res.membership_topics[m])
+		end
+	end		
+
+	work :ccn_table_vm do |res|
+		res.send("making_ccn_table")
 		res.property.stage = res.property.stage + 1
 		logger.info "#{res.property.vm_name}'s stage is #{res.property.stage}"
 		res.membership.each do |m|
@@ -273,8 +431,25 @@ module OmfRc::ResourceProxy::VM
 				"(name: '#{res.property.vm_name})'"
 		else
 			if res.property.state.to_sym == :stopped
-				res.property.ready = res.send("attach_vm_with+#{res.property.virt_mngt}")
+				vmname = File.open("./tmp/vmname", "a")
+				vmname.write(res.property.vm_name+"\n")
+				f = File.open("./tmp/port."+res.property.sn.to_s)
+				res.property.numOfPort = f.read.to_i
+				logger.info "numOfPort is #{res.property.numOfPort}"
+				File.open("./tmp/vmIP."+res.property.sn.to_s).each do |line|
+					(res.property.vmIP ||= []) << line[0..-2]
+				end
+				logger.info "#{res.property.sn}'s vmIP is #{res.property.vmIP}"
+				File.open("./tmp/vmRT."+res.property.sn.to_s).each do |line|
+					(res.property.vmRT ||= []) << line[0..-2]
+				end
+				logger.info "#{res.property.sn}'s vmRT is #{res.property.vmRT}"
+	
+				res.property.ready = res.send("attach_vm_with_#{res.property.virt_mngt}")
 				res.inform(:status, Hashie::Mash.new({:status => {:ready => res.property.ready}}))
+				res.property.stage = res.property.stage + 1
+				logger.info "#{res.property.vm_name}'s stage is #{res.property.stage}"
+
 			else
 				res.log_inform_warn "Cannot attach VM: it is not stopped" +
 				"(name: '#{res.property.vm_name}' - state: #{res.property.state})"
@@ -289,16 +464,16 @@ module OmfRc::ResourceProxy::VM
 				"(name: '#{res.property.vm_name}' - dir: '#{res.property.image_directory}')"
 		else
 			if res.property.state.to_sym == :stopped
-				vmname = File.open("./vmname", "a")
+				vmname = File.open("./tmp/vmname", "a")
 				vmname.write(res.property.vm_name+"\n")
-				f = File.open("./port."+res.property.sn.to_s)
+				f = File.open("./tmp/port."+res.property.sn.to_s)
 				res.property.numOfPort = f.read.to_i
 				logger.info "numOfPort is #{res.property.numOfPort}"
-				File.open("./vmIP."+res.property.sn.to_s).each do |line|
+				File.open("./tmp/vmIP."+res.property.sn.to_s).each do |line|
 					(res.property.vmIP ||= []) << line[0..-2]
 				end
 				logger.info "#{res.property.sn}'s vmIP is #{res.property.vmIP}"
-				File.open("./vmRT."+res.property.sn.to_s).each do |line|
+				File.open("./tmp/vmRT."+res.property.sn.to_s).each do |line|
 					(res.property.vmRT ||= []) << line[0..-2]
 				end
 				logger.info "#{res.property.sn}'s vmRT is #{res.property.vmRT}"
@@ -354,7 +529,9 @@ OmfCommon.init(op_mode, opts) do |el|
 	OmfCommon.comm.on_connected do |comm|
 		info ">>> Starting VM factory"
 		vmgen = OmfRc::ResourceFactory.new(:vmgen, opts.merge(uid: 'vmgen'))
+#		factory = OmfRc::ResourceFactory.new("#{ARGV[0]}_vmf".to_sym", opts.merge(uid: "#ARGV[0]_vmf"))
 
 		comm.on_interrupted { vmgen.disconnect }
+#		comm.on_interrupted { factory.disconnect }
 	end
 end
