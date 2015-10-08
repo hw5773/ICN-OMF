@@ -1,0 +1,19 @@
+This is the log file for the result data.
+The graph is a random graph
+ping to the gateway 3 times from 1 (vm16-1)
+ping to the gateway 3 times from 2 (vm16-2)
+ping to the gateway 3 times from 3 (vm16-3)
+ping from 1 (vm16-1) to 2
+put test.txt into ccnx:/snu.ac.kr from 1 (vm16-1)
+before ping
+1436280316320274297 ns
+after ping
+1436280316320812670 ns
+before ping
+1436280321333079004 ns
+after ping
+1436280321333575112 ns
+before ccn get
+1436280350971484938 ns
+after ccn get
+1436280350972009017 ns
