@@ -1,17 +1,20 @@
 import string
 import sys
 
-f = open("/home/dhkim/vmtest/vmgenerator/routing_table.txt", "r")
-g = open("/home/dhkim/vmtest/vmgenerator/vmIPs", "r")
-h = open("/home/dhkim/vmtest/vmgenerator/vmRTs", "w")
+f = open("./source_codes/entire_path", "r")
 
-num = string.atoi(sys.argv[1])
+num = int(sys.argv[1])
+g = []
+h = []
+
+for i in range(num):
+	g.append(open("./source_codes/vmIP."+str(i+1), "r"))
+	h.append(open("./source_codes/vmRT."+str(i+1), "w"))
 
 # routing information
 rlist = [{}]
 
 # port information
-p = {}
 plist = []
 
 #ip list of vms
@@ -20,37 +23,29 @@ iplist = [[]]
 for i in range(num):
 	rlist.append({})
 	iplist.append([])
-
-line = g.readline()
-
 i = 0
 
 # iplist for each ports of vms
-while line:
-	if len(line)<=2 :
-		plist.append(p)
-		p = {}
-		node = string.atoi(line[:-1])
-		line = g.readline()
-		i = i + 1
-	else:
+for i in range(num):
+	p = {}
+	line = g[i].readline()
+	while line:
 		v = line.split(" ")
-		n = string.atoi(v[0])
+		n = int(v[0])
 		ip = v[1]
-		iplist[i].append(ip)
-		e = v[2][:-1]
-		p[n] = e
-		line = g.readline()
+		iplist[i+1].append(ip)
+		p[n] = v[2][:-1]
+		line = g[i].readline()
+	plist.append(p)
 
-plist.append(p)
 line = f.readline()
 
 # making routing table for each ports in vms
 while line:
 	v = line.split(" ")
-	n = string.atoi(v[0])
-	d = string.atoi(v[2])
-	e = plist[n][string.atoi(v[1])]
+	n = int(v[0])
+	d = int(v[2])
+	e = plist[(n-1)][int(v[1])]
 	
 	for k in iplist[d]:
 		rlist[n][k] = e
@@ -58,12 +53,14 @@ while line:
 	line = f.readline()
 
 # writing for file vmRTs
-for i in range(1, num+1):
-	h.write(str(i) + "\n")
-
-	for j in rlist[i].keys():
-		h.write(j + " " + rlist[i][j] + "\n")
+n = 0
+for hfile in h:
+	n = n + 1
+	for j in rlist[n].keys():
+		hfile.write(j + " " + rlist[n][j] + "\n")
 
 f.close()
-g.close()
-h.close()
+
+for i in range(num):
+	g[i].close()
+	h[i].close()

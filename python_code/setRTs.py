@@ -3,8 +3,8 @@ import string
 import os
 
 num = string.atoi(sys.argv[1]) # the number of nodes
-f = open("/home/dhkim/vmtest/vmgenerator/vmRTs", "r")
-g = open("/home/dhkim/vmtest/vmgenerator/nodeIPs", "r")
+f = open("./source_codes/vmRTs", "r")
+g = open("./source_codes/nodeIPs", "r")
 
 line = g.readline()
 
@@ -25,7 +25,7 @@ while line:
 		line = f.readline()
 	else:
 		v = line.split(" ")
-		os.system("sshpass -p test ssh -o StrictHostKeyChecking=no root@" + m[n] + " route add " + v[0] + " " + v[1][:-1])
+		os.system("sshpass -p test ssh -o StrictHostKeyChecking=no root@" + m[n] + " \"route add " + v[0] + " " + v[1][:-1] + "\"")
 		print "route add " + v[0] + " " + v[1][:-1] + " by " + m[n] + "(vm" + str(n) + ")"
 		line = f.readline()
 		if len(line)<=2:
