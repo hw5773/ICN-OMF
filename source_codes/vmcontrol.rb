@@ -165,26 +165,37 @@ module OmfRc::Util::Vmcontrol
   end
 
   work :set_ip do |res|
-    time = res.property.node * 10
-    sleep(time)
-    cmd = "sudo cp /var/lib/dhcp/dhcpd.leases ./tmp/dhcpd.leases.#{res.property.sn}"
-    res.execute_cmd(cmd, "Copying the leases list to get the management ip", "Failed", "Copying is completed")
+#    time = res.property.node * 10
+#    sleep(time)
+    sleep(3.0)
+    try_ip = true
 
-    f = File.open("./tmp/dhcpd.leases.#{res.property.sn}", "r")
-    g = File.open("./tmp/nodeIPs", "a")
-    ip = []
-    candidate = []
-    for line in f
-      if line.include? "172"
-        ip << line
-      end
-      if line.include? "#{res.property.macAddress}"
-        candidate << ip[-1]
-      end
+    while try_ip do
+        cmd = "sudo cp /var/lib/dhcp/dhcpd.leases ./tmp/dhcpd.leases.#{res.property.sn}"
+        res.execute_cmd(cmd, "Copying the leases list to get the management ip", "Failed", "Copying is completed")
+
+        f = File.open("./tmp/dhcpd.leases.#{res.property.sn}", "r")
+        ip = []
+        candidate = []
+        for line in f
+          if line.include? "172"
+            ip << line
+          end
+          if line.include? "#{res.property.macAddress}"
+            candidate << ip[-1]
+          end
+        end
+
+        f.close
+
+        if candidate.length > 0
+          try_ip = false
+        end
+
+        sleep(3.0)
     end
 
-    f.close
-
+    g = File.open("./tmp/nodeIPs", "a")
     addr = candidate[-1].split(" ")[1]
     res.property.manageIP = addr
 
