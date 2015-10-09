@@ -73,8 +73,8 @@ module OmfRc::Util::Gwcontrol
 
   work :making_ccn_table do |res|
 	f = File.open("./tmp/ccnd.conf.gw", "w")
-	f.write("add ccnx:/snu.ac.kr udp #{res.property.target_eth_ip}")
-	f.write("add ccnx:/ccnx.org udp #{res.property.target_eth_ip}")
+	f.write("add ccnx:/snu.ac.kr udp #{res.property.target_eth_ip}\n")
+	f.write("add ccnx:/ccnx.org udp #{res.property.target_eth_ip}\n")
 	f.write("add ccnx:/ udp #{res.property.target_eth_ip}")
 	f.close
   end
