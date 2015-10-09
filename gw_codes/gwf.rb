@@ -149,8 +149,8 @@ module OmfRc::ResourceProxy::GW
 	end
 
 	configure :target_file do |res, value|
-		res.property.back_ip = value
-		logger.info "The return address is set to #{value}."
+		res.property.target_file = value
+		logger.info "The target file is set to #{value}."
 	end
 
 	configure :back_id do |res, value|

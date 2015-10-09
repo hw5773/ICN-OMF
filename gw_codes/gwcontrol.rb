@@ -116,7 +116,7 @@ module OmfRc::Util::Gwcontrol
   work :ccn_get_via_gw do |res|
     cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile #{res.property.target_file} ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success! now it will be sent back")
-    cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -P 1832-r ./testfile #{res.property.back_id}@#{res.property.back_address}:~/test/testfile\""
+    cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -r ./testfile #{res.property.back_id}@#{res.property.back_address}:~/test/testfile\""
     res.execute_cmd(cmd, "Sending the file to #{res.property.back_address}", "Failed", "Sending success!")
   end
 
