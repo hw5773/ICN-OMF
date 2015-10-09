@@ -16,16 +16,16 @@ module OmfRc::Util::Gwcontrol
   end
 
   work :prepare_gw  do |res|
-#	cmd = "sudo rm /var/lib/dhcp/dhcpd.leases"
-#	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (1/5)")
+	cmd = "sudo rm /var/lib/dhcp/dhcpd.leases"
+	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (1/5)")
 	cmd = "sudo mv /root/.ssh/known_hosts /root/.ssh/known_hosts.bak"
 	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (2/5)")
-#	cmd = "sudo touch /var/lib/dhcp/dhcpd.leases"
-#	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (3/5)")
+	cmd = "sudo touch /var/lib/dhcp/dhcpd.leases"
+	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (3/5)")
 	cmd = "sudo touch /root/.ssh/known_hosts"
 	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (4/5)")
-#	cmd = "/etc/init.d/isc-dhcp-server restart"
-#	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (5/5)")
+	cmd = "/etc/init.d/isc-dhcp-server restart"
+	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (5/5)")
 	Dir.mkdir("tmp") unless File.exists? "tmp"
   end
 
@@ -39,7 +39,7 @@ module OmfRc::Util::Gwcontrol
 	cmd = "sudo cp /var/lib/dhcp/dhcpd.leases ./tmp/dhcpd.leases.gw"
 	res.execute_cmd(cmd, "Copying the leases list to get the management ip", "Failed", "Copying is completed")
 
-	f = File.open("./tmp/dhcpd.leases.gw")
+	f = File.open("./tmp/dhcpd.leases.gw", "r")
 	g = File.open("./tmp/nodeIPs", "a")
 	ip = []
 	candidate = []
