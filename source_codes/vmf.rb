@@ -251,11 +251,11 @@ module OmfRc::ResourceProxy::VM
 	end
 
 	work :xml_revise_vm do |res|
-		res.send("making_xml")
+		res.property.ready = res.send("making_xml")
 		res.property.stage = res.property.stage + 1
 		logger.info "#{res.property.vm_name}'s stage is #{res.property.stage}"
 		res.membership.each do |m|
-			res.inform(:status, {uid: res.uid, stage: res.property.stage.to_i}, res.membership_topics[m])
+			res.inform(:status, {uid: res.uid, stage: res.property.stage.to_i, ready: res.property.ready}, res.membership_topics[m])
 		end
 	end		
 
@@ -446,6 +446,9 @@ module OmfRc::ResourceProxy::VM
 				logger.info "#{res.property.sn}'s vmRT is #{res.property.vmRT}"
 	
 				res.property.ready = res.send("attach_vm_with_#{res.property.virt_mngt}")
+
+				logger.info "#{res.property.vm_name}'s ready is #{res.property.ready}"
+
 				res.inform(:status, Hashie::Mash.new({:status => {:ready => res.property.ready}}))
 				res.property.stage = res.property.stage + 1
 				logger.info "#{res.property.vm_name}'s stage is #{res.property.stage}"
@@ -509,7 +512,7 @@ module OmfRc::ResourceProxy::VM
 			end
 		else
 			res.log_inform_warn "Cannot run VM: it is not stopped or ready yet " +
-				"(name: '#{res.property.vm_name}' - state: #{res.property.state})"
+				"(name: '#{res.property.vm_name}' - state: #{res.property.state} , #{res.property.ready})"
 		end
 	end
 
