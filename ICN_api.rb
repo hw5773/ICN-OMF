@@ -128,7 +128,7 @@ defEvent :gw_ip_set do |state|
 	end.size >= 1
 end
 
-defEvent :gw_eth_set do |state|
+defEvent :gw_table_set do |state|
 	state.find_all do |v|
 		v[:type] == 'gw' && v[:stage] && v[:stage] == 4
 	end.size >= 1
@@ -177,17 +177,17 @@ def gw_setting(g, from, to)
 		onEvent :gw_ip_set do 
 			info "gateway's management ip is set"
 			info "now set the IP address to the ethernet"
-			g.resources[type: "gw", uid: "gw#{subnet}"].action = "eth" 
-		end
-
-		onEvent :gw_eth_set do
-			info "gateway's ethernet ip is set"
-			info "now set the ccn configuration file"
-			g.resources[type: "gw", uid: "gw"].role_set = "gateway"
-			g.resources[type: "gw", uid: "gw#{subnet}"].action = "ccn_table"
+			g.resources[type: "gw", uid: "gw#{subnet}"].action = "ccn_table" 
 		end
 
 		onEvent :gw_ccn_set do
+			info "gateway's ethernet ip is set"
+			info "now set the ccn configuration file"
+			g.resources[type: "gw", uid: "gw"].role_set = "gateway"
+			g.resources[type: "gw", uid: "gw#{subnet}"].action = "eth"
+		end
+
+		onEvent :gw_table_set do
 			info "gateway's ccn configuration is completed"
 			g.resources[type: "gw", uid: "gw#{subnet}"].action = "ccn"
 		end
@@ -245,7 +245,7 @@ def ccn_setting(g, a)
 		subnet = ARGV[-6]
 #			g.create_resource("#{prefix}_#{i}", type: 'vm', hrn: "#{prefix}_#{i}", uid: "#{prefix}_#{i}", sn: i, vm_original_clone: "vm#{i}", vm_name: "#{prefix}_#{i}"+Time.now.to_i.to_s, action: :clone_from)
 		arr.each do |i|
-			g.create_resource("vm#{subnet}-#{i}",id: ARGV[-8], password: ARGV[-7], type: 'vm', hrn: "vm#{subnet}-#{i}", uid: "#{prefix}_#{i}", sn: i, vm_original_clone: "vmi#{subnet}-#{i}", vm_name: "vm#{subnet}-#{i}", action: :attach)
+			g.create_resource("vm#{subnet}-#{i}",id: ARGV[-8], password: ARGV[-7], type: 'vm', hrn: "vm#{subnet}-#{i}", uid: "#{prefix}_#{i}", sn: i, vm_original_clone: "vm#{subnet}-#{i}", vm_name: "vm#{subnet}-#{i}", action: :attach)
 		end
 
 		onEvent :vm_prepared do

@@ -16,8 +16,8 @@ opts = {
 module OmfRc::ResourceProxy::GWfactory
 	include OmfRc::ResourceProxyDSL
 
-	register_proxy :gwgen
-#	register_proxy "#{ARGV[0]}_gwf".to_sym
+#	register_proxy :gwgen
+	register_proxy "#{ARGV[0]}_gwf".to_sym
 	utility :common_tools
 	utility :gwcontrol
 
@@ -78,8 +78,8 @@ end
 module OmfRc::ResourceProxy::GW
 	include OmfRc::ResourceProxyDSL
 
-	register_proxy :gw, :create_by => :gwgen
-#	register_proxy :gw, :create_by => "#{ARGV[0]}_gwf".to_sym
+#	register_proxy :gw, :create_by => :gwgen
+	register_proxy :gw, :create_by => "#{ARGV[0]}_gwf".to_sym
 	utility :common_tools
 	utility :libvirt
 	utility :vmbuilder
@@ -190,15 +190,6 @@ module OmfRc::ResourceProxy::GW
 			res.inform(:status, {uid: res.uid, stage: res.property.stage.to_i}, res.membership_topics[m])
 		end
 	end
-
-#	work :ccn_gw do |res|
-#		res.send("set_ccn_gw")
-#		res.property.stage = res.property.stage + 1
-#		logger.info "#{res.property.vm_name}'s stage is #{res.property.stage}"
-#		res.membership.each do |m|
-#			res.inform(:status, {uid: res.uid, stage: res.property.stage.to_i}, res.membership_topics[m])
-#		end
-#	end
 
 	work :ccn_get_via_gw_gw do |res|
 		res.send("ccn_get_via_gw")
@@ -420,10 +411,10 @@ end
 OmfCommon.init(op_mode, opts) do |el|
 	OmfCommon.comm.on_connected do |comm|
 		info ">>> Starting GW factory"
-		gwgen = OmfRc::ResourceFactory.new(:gwgen, opts.merge(uid: 'gwgen'))
-#		factory = OmfRc::ResourceFactory.new("#{ARGV[0]}_gwf", opts.merge(uid: "#{ARGV[0]}_gwf"))
+#		gwgen = OmfRc::ResourceFactory.new(:gwgen, opts.merge(uid: 'gwgen'))
+		factory = OmfRc::ResourceFactory.new("#{ARGV[0]}_gwf".to_sym, opts.merge(uid: "#{ARGV[0]}_gwf"))
 
-		comm.on_interrupted { gwgen.disconnect }
-#		comm.on_interrupted { factory.disconnect }
+#		comm.on_interrupted { gwgen.disconnect }
+		comm.on_interrupted { factory.disconnect }
 	end
 end
