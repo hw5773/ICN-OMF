@@ -161,7 +161,7 @@ module OmfRc::ResourceProxy::GW
 
 	configure :back_address do |res, value|
 		res.property.back_address = value
-		logger.info "The mac return address is set to #{value}."
+		logger.info "The return address is set to #{value}."
 	end
 
 	configure :back_password do |res, value|
@@ -191,6 +191,11 @@ module OmfRc::ResourceProxy::GW
 			res.inform(:status, {uid: res.uid, stage: res.property.stage.to_i}, res.membership_topics[m])
 		end
 	end
+
+   work :ccn_get_node_gw do |res|
+      res.send("ccn_get_node")
+      logger.info "ccn_get for #{res.property.target_file} is completed"
+   end
 
 	work :ccn_get_via_gw_gw do |res|
 		res.send("ccn_get_via_gw")

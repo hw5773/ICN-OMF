@@ -113,6 +113,11 @@ module OmfRc::Util::Gwcontrol
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
   end
 
+  work :ccn_get_node do |res|
+     cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile #{res.property.target_file} ./outfile\""
+    res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
+  end
+   
   work :ccn_get_via_gw do |res|
     cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile #{res.property.target_file} ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success! now it will be sent back")
@@ -127,6 +132,14 @@ module OmfRc::Util::Gwcontrol
        cmd = "sshpass -p test ssh -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} ifconfig eth1 #{res.property.eth_ip} netmask 255.255.255.0;"
        success = res.execute_cmd(cmd, "Setting the ip address with " + cmd, "Failed", "Set vm ip success!")
     end
+    
+    success = false
+
+    while !success do
+	    cmd = "sshpass -p test ssh -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"nohup ccndstart > foo.out 2> foo.err < /dev/null &\""
+	    success = res.execute_cmd(cmd, "Starting the ccn daemon with #{cmd}", "Failed to start daemon", "#{res.property.vm_name}: Starting the ccn daemon success!")
+       logger.info "#{res.property.role} is preparing to start ccn networking"
+    end
   end
 
   work :set_ccn_gw do |res|
@@ -135,14 +148,6 @@ module OmfRc::Util::Gwcontrol
     while !success do
        cmd = "sshpass -p test scp -r -o StrictHostKeyChecking=no ./tmp/ccnd.conf.gw root@#{res.property.manageIP}:/root/.ccnx/ccnd.conf"
        success = res.execute_cmd(cmd, "Setting the ccn configuration file with " + cmd, "Failed", "#{res.property.vm_name}: Set ccn configuration file success!")
-    end
-
-    success = false
-
-    while !success do
-	    cmd = "sshpass -p test ssh -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"nohup ccndstart > foo.out 2> foo.err < /dev/null &\""
-	    success = res.execute_cmd(cmd, "Starting the ccn daemon with #{cmd}", "Failed to start daemon", "#{res.property.vm_name}: Starting the ccn daemon success!")
-       logger.info "#{res.property.role} is preparing to start ccn networking"
     end
   end
 end
