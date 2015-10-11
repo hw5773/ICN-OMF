@@ -37,9 +37,10 @@ module OmfRc::ResourceProxy::GWfactory
 		res.property.vm_list << child_res.uid
 	end
 
-    property :subnet, :default => 0
-    property :act, :default => :stop
+	property :subnet, :default => 0
+	property :act, :default => :stop
 	property :prepare, :default => 0
+	property :prefix, :default => "#{ARGV[0]}"
     
 	configure :act do |res, value|
 		logger.info "call #{value}"
