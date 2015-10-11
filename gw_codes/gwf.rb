@@ -160,7 +160,7 @@ module OmfRc::ResourceProxy::GW
 
 	configure :back_address do |res, value|
 		res.property.back_address = value
-		logger.info "The mac return address is set to #{value}."
+		logger.info "The return address is set to #{value}."
 	end
 
 	configure :back_password do |res, value|
