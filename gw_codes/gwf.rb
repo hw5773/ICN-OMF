@@ -129,6 +129,7 @@ module OmfRc::ResourceProxy::GW
 	property :target_eth_ip
 	property :macAddress
 	property :target_file
+	property :output_file
 
 	property :role
 	property :back
@@ -152,6 +153,11 @@ module OmfRc::ResourceProxy::GW
 	configure :target_file do |res, value|
 		res.property.target_file = value
 		logger.info "The target file is set to #{value}."
+	end
+
+	configure :output_file do |res, value|
+		res.property.output_file = value
+		logger.info "The output file is set to #{value}."
 	end
 
 	configure :back_id do |res, value|
