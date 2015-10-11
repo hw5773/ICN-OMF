@@ -191,6 +191,11 @@ module OmfRc::ResourceProxy::GW
 		end
 	end
 
+   work :ccn_get_node_gw do |res|
+      res.send("ccn_get_node")
+      logger.info "ccn_get for #{res.property.target_file} is completed"
+   end
+
 	work :ccn_get_via_gw_gw do |res|
 		res.send("ccn_get_via_gw")
 		logger.info "#{res.property.back_address}'s request is satisfied"
