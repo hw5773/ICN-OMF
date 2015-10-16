@@ -137,6 +137,7 @@ module OmfRc::ResourceProxy::GW
 	property :back_id
 	property :back_password
 	property :back_address
+	property :video
 	
 	work :execute_cmd do |res,cmd,intro_msg,error_msg,success_msg|
 		logger.info "#{intro_msg} with: '#{cmd}'"
@@ -148,6 +149,11 @@ module OmfRc::ResourceProxy::GW
 			logger.info "#{success_msg}: '#{result}'"
 			true
 		end
+	end
+
+	configure :video do |res, value|
+		res.property.video = value
+		logger.info "Video is set to #{value}"
 	end
 
 	configure :target_file do |res, value|
@@ -198,10 +204,15 @@ module OmfRc::ResourceProxy::GW
 		end
 	end
 
-   work :ccn_get_node_gw do |res|
-      res.send("ccn_get_node")
-      logger.info "ccn_get for #{res.property.target_file} is completed"
-   end
+	work :ccn_get_node_gw do |res|
+		res.send("ccn_get_node")
+		logger.info "ccn_get for #{res.property.target_file} is completed"
+	end
+
+	work :ccn_video_gw_gw do |res|
+		res.send("video_streaming_gw")
+		logger.info "video_streaming is completed"
+	end
 
 	work :ccn_get_via_gw_gw do |res|
 		res.send("ccn_get_via_gw")

@@ -211,6 +211,12 @@ module OmfRc::ResourceProxy::VM
 	property :target_file, :default => "ccnx:/snu.ac.kr/test.txt"
 	property :output_file, :default => "testfile"
 	property :put_file, :default => "test.txt"
+	property :video
+
+	configure :video do |res, value|
+		res.property.video = value
+		logger.info "video is set to #{value}."
+	end
 
 	configure :target_file do |res, value|
 		res.property.target_file = value
@@ -230,6 +236,10 @@ module OmfRc::ResourceProxy::VM
 	configure :back_password do |res, value|
 		res.property.back_password = value
 		logger.info "the password to return is set."
+	end
+
+	work :ccn_video_vm do |res|
+		res.send("video_streaming")
 	end
 
 	work :eth_vm do |res|

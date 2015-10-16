@@ -150,4 +150,9 @@ module OmfRc::Util::Gwcontrol
        success = res.execute_cmd(cmd, "Setting the ccn configuration file with " + cmd, "Failed", "#{res.property.vm_name}: Set ccn configuration file success!")
     end
   end
+
+  work :video_streaming_gw do |res|
+    cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"vlc #{res.property.video}\""
+    res.execute_cmd(cmd, "Video Streaming Start!", "Failed", "Video Streaming Success!")
+  end
 end
