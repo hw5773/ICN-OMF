@@ -457,7 +457,10 @@ module OmfRc::Util::Vmcontrol
           success = res.execute_cmd(cmd, "Starting the ccn daemon with #{cmd}", "Failed to start daemon", "#{res.property.vm_name}: Starting the ccn daemon success!")
       end
       #cmd = "sshpass -p test ssh -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccn_repo #{res.property.repoName} > repo.out 2> repo.err < /dev/null &\""
-      cmd = "sshpass -p test ssh -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;mkdir #{res.property.repoName};cd #{res.property.repoName};export CCNR_DIRECTORY=\`pwd\`;ccnr &\""
+
+      # TODO: delete mkdir : need to revise it.
+
+      cmd = "sshpass -p test ssh -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;cd #{res.property.repoName};export CCNR_DIRECTORY=\`pwd\`;ccnr &\""
       success = false
       while !success do 
           success = res.execute_cmd(cmd, "Making the repository with #{cmd}", "Failed to start the repository", "#{res.property.vm_name}: Making the repository with the prefix ccnx:/#{res.property.repoName}")
