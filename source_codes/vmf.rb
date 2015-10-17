@@ -187,7 +187,7 @@ module OmfRc::ResourceProxy::VM
 	property :manageIP, :default => ""
 	property :sn, :default => 0
 	property :target, :default => ""
-	property :repoName, :default => "ccnx:/snu.ac.kr"
+	property :repoName, :default => "snu.ac.kr"
 	property :numOfPort, :default => 0
 	property :vmIP, :default => []
 	property :vmRT, :default => []
