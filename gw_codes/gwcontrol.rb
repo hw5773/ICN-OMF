@@ -156,7 +156,7 @@ module OmfRc::Util::Gwcontrol
   end
 
   work :video_streaming_gw do |res|
-    cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"vlc #{res.property.video}\""
+    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"vlc #{res.property.video}\""
     res.execute_cmd(cmd, "Video Streaming Start!", "Failed", "Video Streaming Success!")
   end
 end

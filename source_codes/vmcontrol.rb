@@ -266,7 +266,7 @@ module OmfRc::Util::Vmcontrol
     `sshpass -p test scp ./#{res.property.id}_result.log root@#{res.property.manageIP}:~/`
     `sudo mv ./#{res.property.id}_result.log #{res.property.id}_result.log.bak`
     pwd = `pwd`[0...-1]
-    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn put\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ccnputfile -v -unversioned ccnx:/#{res.property.repoName}/#{res.property.put_file} #{res.property.put_file}; echo \'after ccn put\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/\""
+    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn put\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;cd ~;ccnputfile -v -unversioned ccnx:/#{res.property.repoName}/#{res.property.put_file} #{res.property.put_file}; echo \'after ccn put\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/\""
     res.execute_cmd(cmd, "Putting the file to ccnx:/#{res.property.repoName}/#{res.property.put_file}", "Failed", "ccnput success!")
   end
 
@@ -460,7 +460,7 @@ module OmfRc::Util::Vmcontrol
 
       # TODO: delete mkdir : need to revise it.
 
-      cmd = "sshpass -p test ssh -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;cd #{res.property.repoName};export CCNR_DIRECTORY=\`pwd\`;ccnr &\""
+      cmd = "sshpass -p test ssh -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;cd #{res.property.repoName};export CCNR_DIRECTORY=\`pwd\`;nohup ccnr > foo.out 2> foo.err < /dev/null &\""
       success = false
       while !success do 
           success = res.execute_cmd(cmd, "Making the repository with #{cmd}", "Failed to start the repository", "#{res.property.vm_name}: Making the repository with the prefix ccnx:/#{res.property.repoName}")
