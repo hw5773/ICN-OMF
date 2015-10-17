@@ -433,6 +433,10 @@ module OmfRc::Util::Vmcontrol
         f.write("add ccnx:/snu.ac.kr udp #{rlist[res.property.sn][k]}\n")
         f.write("add ccnx:/ccnx.org udp #{rlist[res.property.sn][k]}\n")
         f.write("add ccnx:/ udp #{rlist[res.property.sn][k]}\n")
+        f.write("add ccnx:/snu.ac.kr tcp #{rlist[res.property.sn][k]}\n")
+        f.write("add ccnx:/ccnx.org tcp #{rlist[res.property.sn][k]}\n")
+        f.write("add ccnx:/ tcp #{rlist[res.property.sn][k]}\n")
+
       end
 
       f.close

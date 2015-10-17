@@ -76,6 +76,10 @@ module OmfRc::Util::Gwcontrol
 	f.write("add ccnx:/snu.ac.kr udp #{res.property.target_eth_ip}\n")
 	f.write("add ccnx:/ccnx.org udp #{res.property.target_eth_ip}\n")
 	f.write("add ccnx:/ udp #{res.property.target_eth_ip}")
+	f.write("add ccnx:/snu.ac.kr tcp #{res.property.target_eth_ip}\n")
+	f.write("add ccnx:/ccnx.org tcp #{res.property.target_eth_ip}\n")
+	f.write("add ccnx:/ tcp #{res.property.target_eth_ip}")
+
 	f.close
   end
 
