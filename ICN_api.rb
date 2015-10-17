@@ -107,43 +107,43 @@ end
 defEvent :gw_init do |state|
 	state.find_all do |v|
 		v[:type] == 'gw' && !v[:membership].empty?
-	end.size >= 2
+	end.size >= 1
 end
 
 defEvent :gw_prepared do |state|
 	state.find_all do |v|
 		v[:type] == 'gw' && v[:stage] && v[:stage] == 1
-	end.size >= 2
+	end.size >= 1
 end
 
 defEvent :gw_run do |state|
 	state.find_all do |v|
 		v[:type] == 'gw' && v[:stage] && v[:stage] == 2
-	end.size >= 2
+	end.size >= 1
 end
 
 defEvent :gw_ip_set do |state|
 	state.find_all do |v|
 		v[:type] == 'gw' && v[:stage] && v[:stage] == 3
-	end.size >= 2
+	end.size >= 1
 end
 
 defEvent :gw_table_set do |state|
 	state.find_all do |v|
 		v[:type] == 'gw' && v[:stage] && v[:stage] == 4
-	end.size >= 2
+	end.size >= 1
 end
 
 defEvent :gw_ccn_set do |state|
 	state.find_all do |v|
 		v[:type] == 'gw' && v[:stage] && v[:stage] == 5
-	end.size >= 2
+	end.size >= 1
 end
 
 defEvent :gw_set do |state|
 	state.find_all do |v|
 		v[:type] == 'gw' && v[:stage] && v[:stage] == 6
-	end.size >= 2
+	end.size >= 1
 end
 
 def gw_setting(g, id, from, to)
@@ -154,44 +154,44 @@ def gw_setting(g, id, from, to)
 #		g.create_resource("gw", type: 'gw', hrn: "gw", uid: "test0", sn: 0, vm_original_clone: "gw", vm_name: "gw"+Time.now.to_i.to_s, eth_ip: from, target_eth_ip: to, action: :clone_from)
 	#	info "prefix is #{g.prefix}"
 
-		g.create_resource("#{g.resources[uid: id].property.prefix}_gw#{subnet}", type: 'gw', hrn: "#{g.resources[uid: id].property.prefix}_gw#{subnet}", uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}", sn: 0, vm_original_clone: "w", vm_name: "gw#{subnet}", eth_ip: from, target_eth_ip: to, action: :attach)
+		g.create_resource("#{id[0...-4]}_gw#{subnet}", type: 'gw', hrn: "#{id[0...-4]}_gw#{subnet}", uid: "#{id[0...-4]}_gw#{subnet}", sn: 0, vm_original_clone: "w", vm_name: "gw#{subnet}", eth_ip: from, target_eth_ip: to, action: :attach)
 
 
 		onEvent :gw_init do
 			info "gateway is created"
 			info "now get the mac address"
-			g.resources[type: "gw", uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].action = "get_mac"
+			g.resources[type: "gw", uid: "#{id[0...-4]}_gw#{subnet}"].action = "get_mac"
 		end
 
 		onEvent :gw_prepared do
 			info "gateway creating is prepared"
 			info "now run the gateway"
-			g.resources[type: "gw", uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].action = "run"
+			g.resources[type: "gw", uid: "#{id[0...-4]}_gw#{subnet}"].action = "run"
 		end
 
 		onEvent :gw_run do
 			info "gateway is run"
 			info "now set the management IP to the gateway"
 
-			g.resources[type: "gw", uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].action = "set_ip"
+			g.resources[type: "gw", uid: "#{id[0...-4]}_gw#{subnet}"].action = "set_ip"
 		end
 
 		onEvent :gw_ip_set do 
 			info "gateway's management ip is set"
 			info "now set the IP address to the ethernet"
-			g.resources[type: "gw", uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].action = "ccn_table" 
+			g.resources[type: "gw", uid: "#{id[0...-4]}_gw#{subnet}"].action = "ccn_table" 
 		end
 
 		onEvent :gw_ccn_set do
 			info "gateway's ethernet ip is set"
 			info "now set the ccn configuration file"
-			g.resources[type: "gw", uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].role_set = "gateway"
-			g.resources[type: "gw", uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].action = "eth"
+			g.resources[type: "gw", uid: "#{id[0...-4]}_gw#{subnet}"].role_set = "gateway"
+			g.resources[type: "gw", uid: "#{id[0...-4]}_gw#{subnet}"].action = "eth"
 		end
 
 		onEvent :gw_table_set do
 			info "gateway's ccn configuration is completed"
-			g.resources[type: "gw", uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].action = "ccn"
+			g.resources[type: "gw", uid: "#{id[0...-4]}_gw#{subnet}"].action = "ccn"
 		end
 	end
 end
@@ -389,9 +389,9 @@ def ccn_get_node(g, id, tf, of)
 		prefix = ARGV[-2]
 	end
 
-	g.resources[type: 'gw', uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].target_file = tf
-	g.resources[type: 'gw', uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].output_file = of
-	g.resources[type: 'gw', uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].action = 'ccn_get_node'
+	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].target_file = tf
+	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].output_file = of
+	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].action = 'ccn_get_node'
 end
 
 def ccn_get_ip(g, c, tf, bid, bpw, baddr)
@@ -422,11 +422,11 @@ def ccn_get_via_gw(g, id, tf, bid, bpw, bip)
 		prefix = ARGV[-2]
 	end
 
-	g.resources[type: 'gw', uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].target_file = tf
-	g.resources[type: 'gw', uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].back_id = bid
-	g.resources[type: 'gw', uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].back_password = bpw
-	g.resources[type: 'gw', uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].back_address = bip
-	g.resources[type: 'gw', uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].action = 'ccn_get_via_gw'
+	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].target_file = tf
+	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].back_id = bid
+	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].back_password = bpw
+	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].back_address = bip
+	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].action = 'ccn_get_via_gw'
 end
 
 def ccn_video(g, c, video)
@@ -455,7 +455,7 @@ def ccn_video_gw(g, id, video)
 		prefix = ARGV[-2]
 	end
 
-	g.resources[type: 'gw', uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].video = video
-	g.resources[type: 'gw', uid: "#{g.resources[uid: id].property.prefix}_gw#{subnet}"].action = 'ccn_video_gw'
+	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].video = video
+	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].action = 'ccn_video_gw'
 end
 

@@ -239,7 +239,9 @@ module OmfRc::ResourceProxy::VM
 	end
 
 	work :ccn_video_vm do |res|
+		logger.info "start video streaming"
 		res.send("video_streaming")
+		logger.info "end video_streaming"
 	end
 
 	work :eth_vm do |res|
