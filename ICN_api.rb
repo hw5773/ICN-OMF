@@ -441,7 +441,7 @@ def ccn_video(g, c, video)
 	end
 
 	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].video = video
-	g.resources[typd: 'vm', uid: "#{prefix}_#{c}"].action = 'ccn_video'
+	g.resources[type: 'vm', uid: "#{prefix}_#{c}"].action = 'ccn_video'
 end
 
 def ccn_video_gw(g, id, video)
