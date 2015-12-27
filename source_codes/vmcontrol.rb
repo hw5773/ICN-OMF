@@ -301,7 +301,7 @@ module OmfRc::Util::Vmcontrol
   end
 
   work :making_xml do |res|
-    inputlines = ["    <interface type=\'network\'>", "      <source network=\'ovsbr1\'/>", "      <model type=\'virtio\'/>", "    </interface>"]
+    inputlines = ["    <interface type=\'network\'>", "      <source network=\'ovstest\'/>", "      <model type=\'virtio\'/>", "    </interface>"]
     f = File.open("./tmp/port.#{res.property.sn}", "r")
     n = f.gets.to_i
     cmd = "sudo cp /etc/libvirt/qemu/#{res.property.vm_name}.xml ./tmp/tmp_#{res.property.vm_name}.xml"
