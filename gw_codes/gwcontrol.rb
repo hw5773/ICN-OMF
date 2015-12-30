@@ -75,10 +75,10 @@ module OmfRc::Util::Gwcontrol
 	f = File.open("./tmp/ccnd.conf.gw", "w")
 	f.write("add ccnx:/snu.ac.kr udp #{res.property.target_eth_ip}\n")
 	f.write("add ccnx:/ccnx.org udp #{res.property.target_eth_ip}\n")
-	f.write("add ccnx:/ udp #{res.property.target_eth_ip}")
+	f.write("add ccnx:/ udp #{res.property.target_eth_ip}\n")
 	f.write("add ccnx:/snu.ac.kr tcp #{res.property.target_eth_ip}\n")
 	f.write("add ccnx:/ccnx.org tcp #{res.property.target_eth_ip}\n")
-	f.write("add ccnx:/ tcp #{res.property.target_eth_ip}")
+	f.write("add ccnx:/ tcp #{res.property.target_eth_ip}\n")
 
 	f.close
   end
@@ -113,19 +113,19 @@ module OmfRc::Util::Gwcontrol
   end
 
   work :ccn_get_file do |res|
-    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile ccnx:/snu.ac.kr/test ./testfile\""
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned ccnx:/snu.ac.kr/test ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
   end
 
   work :ccn_get_node do |res|
-     cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile #{res.property.target_file} ./outfile\""
+     cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
   end
    
   work :ccn_get_via_gw do |res|
-    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile #{res.property.target_file} ./outfile\""
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success! now it will be sent back")
-    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -r ./testfile #{res.property.back_id}@#{res.property.back_address}:~/test/testfile\""
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -r ./outfile #{res.property.back_id}@#{res.property.back_address}:~/test/outfile\""
     res.execute_cmd(cmd, "Sending the file to #{res.property.back_address}", "Failed", "Sending success!")
   end
 
