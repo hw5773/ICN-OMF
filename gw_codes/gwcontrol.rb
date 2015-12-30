@@ -108,24 +108,24 @@ module OmfRc::Util::Gwcontrol
   end
 
   work :ping_gw do |res|
-    cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"ping -c 3 172.16.11.1\""
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"ping -c 3 172.16.11.1\""
     res.execute_cmd(cmd, "Ping to the gateway", "Failed", "Ping success!")
   end
 
   work :ccn_get_file do |res|
-    cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned ccnx:/snu.ac.kr/test ./testfile\""
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned ccnx:/snu.ac.kr/test ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
   end
 
   work :ccn_get_node do |res|
-     cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
+     cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
   end
    
   work :ccn_get_via_gw do |res|
-    cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success! now it will be sent back")
-    cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -r ./outfile #{res.property.back_id}@#{res.property.back_address}:~/test/outfile\""
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -r ./outfile #{res.property.back_id}@#{res.property.back_address}:~/test/outfile\""
     res.execute_cmd(cmd, "Sending the file to #{res.property.back_address}", "Failed", "Sending success!")
   end
 
@@ -133,14 +133,14 @@ module OmfRc::Util::Gwcontrol
     success = false
 
     while !success do
-       cmd = "sshpass -p test ssh -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} ifconfig eth1 #{res.property.eth_ip} netmask 255.255.255.0;"
+       cmd = "sshpass -p test ssh -o StrictHostKeyChecking=no root@#{res.property.manageIP} ifconfig eth1 #{res.property.eth_ip} netmask 255.255.255.0;"
        success = res.execute_cmd(cmd, "Setting the ip address with " + cmd, "Failed", "Set vm ip success!")
     end
     
     success = false
 
     while !success do
-	    cmd = "sshpass -p test ssh -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"nohup ccndstart > foo.out 2> foo.err < /dev/null &\""
+	    cmd = "sshpass -p test ssh -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"nohup ccndstart > foo.out 2> foo.err < /dev/null &\""
 	    success = res.execute_cmd(cmd, "Starting the ccn daemon with #{cmd}", "Failed to start daemon", "#{res.property.vm_name}: Starting the ccn daemon success!")
        logger.info "#{res.property.role} is preparing to start ccn networking"
     end
@@ -156,7 +156,7 @@ module OmfRc::Util::Gwcontrol
   end
 
   work :video_streaming_gw do |res|
-    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"vlc #{res.property.video}\""
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"vlc #{res.property.video}\""
     res.execute_cmd(cmd, "Video Streaming Start!", "Failed", "Video Streaming Success!")
   end
 end
