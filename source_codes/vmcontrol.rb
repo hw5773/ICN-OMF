@@ -354,12 +354,11 @@ module OmfRc::Util::Vmcontrol
   work :set_eth do |res|
     lst = res.property.vmIP
 
-    success = false
-
     lst.each do |line|
       v = line.split
       c = "ifconfig #{v[2]} #{v[1]} netmask 255.255.255.0;"
 	  cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"#{c}\""
+      success = false
       while !success do
         success = res.execute_cmd(cmd, "Setting the ip address with #{cmd}", "Failed", "Set vm ip success!")
       end
@@ -467,26 +466,21 @@ module OmfRc::Util::Vmcontrol
   work :set_rt do |res|
     lst = res.property.vmRT
 
-    cmds ||=[]
-    cmds << "\""
-
     lst.each do |line|
       v = line.split
       c = "route add #{v[0]} #{v[1]};"
       cmds << c
+      cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"#{c}\""
+      success = false
+      while !success do
+        success = res.execute_cmd(cmd, "Setting the routing table with #{cmd}", "Failed", "Set vm rt success!")
+      end
     end
-
-    cmds << "\""
 
     cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} "
     cmds.each do |c|
       cmd << c
     end
 
-    success = false
-
-    while !success do
-        success = res.execute_cmd(cmd, "Setting the routing table with " + cmd, "Failed", "Set vm rt success!")
-    end
   end
 end
