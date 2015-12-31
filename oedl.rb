@@ -1,60 +1,9 @@
 require './ICN_api'
 
-if ARGV[-6].to_i > 0
-	prefix = ARGV[-8]
-elsif ARGV[-2].to_i > 0
-	prefix = ARGV[-4]
-else
-	prefix = ARGV[-2]
-end
-
-def_property('vmgen', 'vmgen', 'Name of vmgen')
-def_property('gwgen', 'gwgen', 'Name of gwgen')
-
 defGroup('init', 'mbox1@mbox1')
 defGroup('request', 'mbox2@mbox1')
-#defGroup("#{prefix}_vmf", prop.vmgen)
-defGroup("vmgens", prop.vmgen)
-defGroup('gwgens', prop.gwgen)
 
 onEvent :ALL_UP do
-	group('gwgens') do |g|
-		gw_setting(g, "10.#{ARGV[-6]}.12.100", "10.#{ARGV[-6]}.12.2")
-	end
-
-#	group("#{prefix}_vmf") do |g|
-	group("vmgens") do |g|
-		ccn_setting(g, ARGV)
-		onEvent :vm_ccn_set do
-			info "Generating the CCN overlay network is completed."
-			info "Testing the CCN networking"
-			ping_gw(g, 1)
-			ping_gw(g, 2)
-			ping_gw(g, 3)
-
-			after 5 do
-				ping_to(g, 1, 2)
-			end
-
-			after 10 do
-				ccn_put(g, 1, "test.txt")
-			end
-
-			after 15 do
-				ccn_get_ip(g, 2, "ccnx:/snu.ac.kr/test.txt", "dhkim", "mmlab2015", "147.46.216.250")
-			end
-
-			after 20 do
-				ccn_get(g, 3, "ccnx:/snu.ac.kr/test.txt", "test")
-			end
-
-			after 25 do
-				ccn_get_via_gw(group('gwgens'), "ccnx:/snu.ac.kr/test.txt", "147.46.215.152")
-			end
-
-			after 300 do
-				done!
-			end
-		end
-	end
+	group('init').exec("ls -l")
+	group('request').exec("hostname")
 end

@@ -151,10 +151,8 @@ def gw_setting(g, id, from, to)
 	subnet = ARGV[-6].to_i
 
 	onEvent :prepare_1 do
-#		g.create_resource("gw", type: 'gw', hrn: "gw", uid: "test0", sn: 0, vm_original_clone: "gw", vm_name: "gw"+Time.now.to_i.to_s, eth_ip: from, target_eth_ip: to, action: :clone_from)
-	#	info "prefix is #{g.prefix}"
 
-		g.create_resource("#{id[0...-4]}_gw#{subnet}", type: 'gw', hrn: "#{id[0...-4]}_gw#{subnet}", uid: "#{id[0...-4]}_gw#{subnet}", sn: 0, vm_original_clone: "w", vm_name: "gw#{subnet}", eth_ip: from, target_eth_ip: to, action: :attach)
+		g.create_resource("#{id[0...-4]}_gw#{subnet}", type: 'gw', hrn: "#{id[0...-4]}_gw#{subnet}", uid: "#{id[0...-4]}_gw#{subnet}", sn: subnet, vm_original_clone: "gw", vm_name: "gw#{subnet}", eth_ip: from, target_eth_ip: to, action: :attach)
 
 
 		onEvent :gw_init do
@@ -245,7 +243,6 @@ def ccn_setting(g, a)
 		sub = ((ARGV[-3].to_i+ARGV[-2].to_i+1)..(ARGV[-3].to_i+ARGV[-2].to_i+ARGV[-1].to_i))
 		prefix = ARGV[-8]
 		subnet = ARGV[-6]
-#			g.create_resource("#{prefix}_#{i}", type: 'vm', hrn: "#{prefix}_#{i}", uid: "#{prefix}_#{i}", sn: i, vm_original_clone: "vm#{i}", vm_name: "#{prefix}_#{i}"+Time.now.to_i.to_s, action: :clone_from)
 		arr.each do |i|
 			g.create_resource("vm#{subnet}-#{i}",id: ARGV[-8], password: ARGV[-7], type: 'vm', hrn: "vm#{subnet}-#{i}", uid: "#{prefix}_#{i}", sn: i, vm_original_clone: "vm#{subnet}-#{i}", vm_name: "vm#{subnet}-#{i}", action: :attach)
 		end
@@ -427,6 +424,10 @@ def ccn_get_via_gw(g, id, tf, bid, bpw, bip)
 	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].back_password = bpw
 	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].back_address = bip
 	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].action = 'ccn_get_via_gw'
+end
+
+def get_video_via_ip(g, nip, nid, npw, gip, gid, gpw, target_file, output_file)
+	g.exec("sshpass -p #{npw} ssh -o StrictHostKeyChecking=no #{nid}@#{nip} \"sshpass -p #{gpw} ssh -o StrictHostKeyChecking=no #{gid}@#{gip} 'export PATH=$PATH:/usr/java/jdk1.7.0_07/bin;source /etc/profile;ccngetfile -v -unversioned #{target_file} #{output_file}; sshpass -p #{npw} scp #{output_file} #{nid}@#{nip}:/var/www/html/'\";wget http://#{nip}/#{output_file}")
 end
 
 def ccn_video(g, c, video)

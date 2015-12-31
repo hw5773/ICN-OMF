@@ -220,7 +220,7 @@ module OmfRc::Util::Vmcontrol
     `sudo mv ./#{res.property.id}_result.log #{res.property.id}_result.log.bak`
     pwd = `pwd`[0...-1]
 
-    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"echo \'before ping\' >> #{res.property.id}_result.log;echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ping -c 3 172.16.11.1;echo \'after ping\' >> #{res.property.id}_result.log;echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"echo \'before ping\' >> #{res.property.id}_result.log;echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ping -c 3 172.16.11.1;echo \'after ping\' >> #{res.property.id}_result.log;echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
     res.execute_cmd(cmd, "Ping to the gateway", "Failed", "Ping success!")
   end
 
@@ -235,7 +235,7 @@ module OmfRc::Util::Vmcontrol
     `sudo mv ./#{res.property.id}_result.log #{res.property.id}_result.log.bak`
     pwd = `pwd`[0...-1]
     
-    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ccngetfile -v -unversioned #{res.property.target_file} #{res.property.output_file};echo \'after ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ccngetfile -v -unversioned #{res.property.target_file} #{res.property.output_file};echo \'after ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
     res.execute_cmd(cmd, "Getting the file #{res.property.target_file}", "Failed", "ccnget success!")
   end
 
@@ -250,9 +250,9 @@ module OmfRc::Util::Vmcontrol
     `sudo mv ./#{res.property.id}_result.log #{res.property.id}_result.log.bak`
     pwd = `pwd`[0...-1]
     
-    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ccngetfile -v -unversioned #{res.property.target_file} #{res.property.output_file};echo \'after ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;\""
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ccngetfile -v -unversioned #{res.property.target_file} #{res.property.output_file};echo \'after ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;\""
     res.execute_cmd(cmd, "Getting the file #{res.property.target_file}", "Failed", "ccnget success! now it will be sent back")
-    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"echo \'before send the output file to IP network\' >> #{res.property.id}_result.log; echo \'`date +%s%N` ns\' >> #{res.property.id}_result.log; sshpass -p #{res.property.back_password} scp -r #{res.property.output_file} #{res.property.back_id}@#{res.property.back}:~/#{res.property.output_file}; echo \'after send the output file to IP network\' >> #{res.property.id}_result.log; echo \'`date +%s%N` ns\' >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"echo \'before send the output file to IP network\' >> #{res.property.id}_result.log; echo \'`date +%s%N` ns\' >> #{res.property.id}_result.log; sshpass -p #{res.property.back_password} scp -r #{res.property.output_file} #{res.property.back_id}@#{res.property.back}:~/#{res.property.output_file}; echo \'after send the output file to IP network\' >> #{res.property.id}_result.log; echo \'`date +%s%N` ns\' >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
     res.execute_cmd(cmd, "Sending the file to #{res.property.back}", "Failed", "Sending success!")
   end
 
@@ -266,12 +266,12 @@ module OmfRc::Util::Vmcontrol
     `sshpass -p test scp ./#{res.property.id}_result.log root@#{res.property.manageIP}:~/`
     `sudo mv ./#{res.property.id}_result.log #{res.property.id}_result.log.bak`
     pwd = `pwd`[0...-1]
-    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn put\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;cd ~;ccnputfile -v -unversioned ccnx:/#{res.property.repoName}/#{res.property.put_file} ~/#{res.property.put_file}; echo \'after ccn put\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/\""
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn put\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;cd ~;ccnputfile -v -unversioned ccnx:/#{res.property.repoName}/#{res.property.put_file} ~/#{res.property.put_file}; echo \'after ccn put\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/\""
     res.execute_cmd(cmd, "Putting the file to ccnx:/#{res.property.repoName}/#{res.property.put_file}", "Failed", "ccnput success!")
   end
 
   work :video_streaming do |res|
-    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"vlc #{res.property.video}\""
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"vlc #{res.property.video}\""
     res.execute_cmd(cmd, "Video Streaming Start!", "Failed", "Video Streaming Success!")
   end
 
@@ -296,7 +296,7 @@ module OmfRc::Util::Vmcontrol
 
     list = line.split(" ")
 
-    cmd = "sshpass -p test #{SSH} -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"echo \'before ping\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ping -c 3 #{list[1]}; echo \'after ping\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"echo \'before ping\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ping -c 3 #{list[1]}; echo \'after ping\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
     res.execute_cmd(cmd, "Ping from #{res.property.sn} to #{res.property.target}", "Failed", "ping success!")
   end
 
@@ -365,7 +365,7 @@ module OmfRc::Util::Vmcontrol
 
     cmds << "\""
 
-    cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} "
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} "
     cmds.each do |c|
       cmd << c
     end
@@ -452,7 +452,7 @@ module OmfRc::Util::Vmcontrol
 
     case res.property.role
     when "publisher"
-      cmd = "sshpass -p test ssh -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"nohup ccndstart > foo.out 2> foo.err < /dev/null &\""
+      cmd = "sshpass -p test ssh -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"nohup ccndstart > foo.out 2> foo.err < /dev/null &\""
       while !success do
           success = res.execute_cmd(cmd, "Starting the ccn daemon with #{cmd}", "Failed to start daemon", "#{res.property.vm_name}: Starting the ccn daemon success!")
       end
@@ -460,13 +460,13 @@ module OmfRc::Util::Vmcontrol
 
       # TODO: delete mkdir : need to revise it.
 
-      cmd = "sshpass -p test ssh -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;cd #{res.property.repoName};export CCNR_DIRECTORY=/root/#{res.property.repoName};nohup ccnr > repo.out 2> repo.err < /dev/null &\""
+      cmd = "sshpass -p test ssh -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;cd #{res.property.repoName};export CCNR_DIRECTORY=/root/#{res.property.repoName};nohup ccnr > repo.out 2> repo.err < /dev/null &\""
       success = false
       while !success do 
           success = res.execute_cmd(cmd, "Making the repository with #{cmd}", "Failed to start the repository", "#{res.property.vm_name}: Making the repository with the prefix ccnx:/#{res.property.repoName}")
       end
     else
-      cmd = "sshpass -p test ssh -X -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"nohup ccndstart > foo.out 2> foo.err < /dev/null &\""
+      cmd = "sshpass -p test ssh -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"nohup ccndstart > foo.out 2> foo.err < /dev/null &\""
       while !success do
           success = res.execute_cmd(cmd, "Starting the ccn daemon with #{cmd}", "Failed to start daemon", "#{res.property.vm_name}: Starting the ccn daemon success!")
       end
@@ -489,7 +489,7 @@ module OmfRc::Util::Vmcontrol
 
     cmds << "\""
 
-    cmd = "sshpass -p test #{SSH} -f -o StrictHostKeyChecking=no root@#{res.property.manageIP} "
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} "
     cmds.each do |c|
       cmd << c
     end
