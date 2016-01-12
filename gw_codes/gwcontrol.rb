@@ -16,16 +16,16 @@ module OmfRc::Util::Gwcontrol
   end
 
   work :prepare_gw  do |res|
-	cmd = "sudo rm /var/lib/dhcp/dhcpd.leases"
-	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (1/5)")
-	cmd = "sudo mv /root/.ssh/known_hosts /root/.ssh/known_hosts.bak"
-	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (2/5)")
-	cmd = "sudo touch /var/lib/dhcp/dhcpd.leases"
-	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (3/5)")
+#	cmd = "sudo rm /var/lib/dhcp/dhcpd.leases"
+#	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (1/5)")
+#	cmd = "sudo mv /root/.ssh/known_hosts /root/.ssh/known_hosts.bak"
+#	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (2/5)")
+#	cmd = "sudo touch /var/lib/dhcp/dhcpd.leases"
+#	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (3/5)")
 #	cmd = "sudo touch /root/.ssh/known_hosts"
 #	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (4/5)")
-	cmd = "/etc/init.d/isc-dhcp-server restart"
-	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (5/5)")
+#	cmd = "/etc/init.d/isc-dhcp-server restart"
+#	res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (5/5)")
 	Dir.mkdir("tmp") unless File.exists? "tmp"
   end
 
@@ -35,6 +35,7 @@ module OmfRc::Util::Gwcontrol
 
   work :set_ip do |res|
    try_ip = true
+   try_num = 0
 
    while try_ip do
    	cmd = "sudo cp /var/lib/dhcp/dhcpd.leases ./tmp/dhcpd.leases.gw"
@@ -50,15 +51,22 @@ module OmfRc::Util::Gwcontrol
    		if line.include? "#{res.property.macAddress}"
 	   		candidate << ip[-1]
 	   	end
-       end
+        end
+	f.close
 
-	   f.close
+      	if candidate.length > 0
+         	try_ip = false
+      	end
 
-      if candidate.length > 0
-         try_ip = false
-      end
+      	sleep(3.0)
 
-      sleep(1.0)
+	try_num = try_num + 1
+
+	if try_num == 12
+		cmd = "sudo virsh destroy #{res.property.vm_name}; sudo virsh start #{res.property.vm_name}"
+		res.execute_cmd(cmd, "Rebooting the gateway", "Failed", "Rebooting")
+		try_num = 0
+	end
    end
 
    g = File.open("./tmp/nodeIPs", "a")
@@ -113,17 +121,20 @@ module OmfRc::Util::Gwcontrol
   end
 
   work :ccn_get_file do |res|
-    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned ccnx:/snu.ac.kr/test ./outfile\""
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;
+	ccngetfile -v -unversioned ccnx:/snu.ac.kr/test.txt ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
   end
 
   work :ccn_get_node do |res|
-     cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;
+	ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
   end
    
   work :ccn_get_via_gw do |res|
-    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
+    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;
+	ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success! now it will be sent back")
     cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -r ./outfile #{res.property.back_id}@#{res.property.back_address}:~/test/outfile\""
     res.execute_cmd(cmd, "Sending the file to #{res.property.back_address}", "Failed", "Sending success!")

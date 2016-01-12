@@ -426,8 +426,9 @@ def ccn_get_via_gw(g, id, tf, bid, bpw, bip)
 	g.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].action = 'ccn_get_via_gw'
 end
 
-def get_video_via_ip(g, nip, nid, npw, gip, gid, gpw, target_file, output_file)
-	g.exec("sshpass -p #{npw} ssh -o StrictHostKeyChecking=no #{nid}@#{nip} \"sshpass -p #{gpw} ssh -o StrictHostKeyChecking=no #{gid}@#{gip} 'export PATH=$PATH:/usr/java/jdk1.7.0_07/bin;source /etc/profile;ccngetfile -v -unversioned #{target_file} #{output_file}; sshpass -p #{npw} scp #{output_file} #{nid}@#{nip}:/var/www/html/'\";wget http://#{nip}/#{output_file}")
+def get_video_via_ip(g1, g2, id, nip, nid, npw, gid, gpw, target_file, output_file)
+	ip = g2.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].manageIP
+	g1.exec("sshpass -p #{npw} ssh -o StrictHostKeyChecking=no #{nid}@#{nip} \"sshpass -p #{gpw} ssh -o StrictHostKeyChecking=no #{gid}@#{ip} 'export PATH=$PATH:/usr/java/jdk1.7.0_07/bin;source /etc/profile;ccngetfile -v -unversioned #{target_file} #{output_file}; sshpass -p #{npw} scp #{output_file} #{nid}@#{nip}:/var/www/html/'\";mplayer http://#{nip}/#{output_file}")
 end
 
 def ccn_video(g, c, video)

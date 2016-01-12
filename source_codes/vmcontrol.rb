@@ -18,8 +18,8 @@ module OmfRc::Util::Vmcontrol
   work :prepare do |res|
     cmd = "sudo rm /var/lib/dhcp/dhcpd.leases"
     res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (1/5)")
-    cmd = "sudo mv /root/.ssh/known_hosts /root/.ssh/known_hosts.bak"
-    res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (2/5)")
+#    cmd = "sudo mv /root/.ssh/known_hosts /root/.ssh/known_hosts.bak"
+#    res.execute_cmd(cmd, "Preparing the experiment", "Failed to prepare", "Progressing (2/5)")
     cmd = "sudo touch /var/lib/dhcp/dhcpd.leases"
     res.execute_cmd(cmd, "Preparing the experiment (3/5)", "Failed to prepare", "Progressing (3/5)")
 #    cmd = "sudo touch /root/.ssh/known_hosts"
@@ -169,6 +169,7 @@ module OmfRc::Util::Vmcontrol
 #    sleep(time)
 #    sleep(3.0)
     try_ip = true
+    try_num = 0
 
     while try_ip do
         cmd = "sudo cp /var/lib/dhcp/dhcpd.leases ./tmp/dhcpd.leases.#{res.property.sn}"
@@ -192,7 +193,15 @@ module OmfRc::Util::Vmcontrol
           try_ip = false
         end
 
-        sleep(1.0)
+        sleep(3.0)
+
+        try_num = try_num + 1
+
+        if try_num == 12 + res.property.sn
+          cmd = "sudo virsh destroy #{res.property.vm_name}; sudo virsh start #{res.property.vm_name}"
+          res.execute_cmd(cmd, "Rebooting #{res.property.vm_name}", "Failed", "Rebooting")
+          try_num = 0
+        end
     end
 
     g = File.open("./tmp/nodeIPs", "a")
@@ -304,7 +313,7 @@ module OmfRc::Util::Vmcontrol
     inputlines = ["    <interface type=\'network\'>", "      <source network=\'ovstest\'/>", "      <model type=\'virtio\'/>", "    </interface>"]
     f = File.open("./tmp/port.#{res.property.sn}", "r")
     n = f.gets.to_i
-    cmd = "sudo cp /etc/libvirt/qemu/#{res.property.vm_name}.xml ./tmp/tmp_#{res.property.vm_name}.xml"
+    cmd = "sudo cp /etc/libvirt/qemu/vm_#{res.property.sn}.xml ./tmp/tmp_#{res.property.vm_name}.xml"
     res.execute_cmd(cmd, "Copy the xml file to tmp directory", "Failed", "Copy success!")
     old_xml = open("./tmp/tmp_#{res.property.vm_name}.xml", "r")
     new_xml = open("./tmp/#{res.property.vm_name}.xml", "w")

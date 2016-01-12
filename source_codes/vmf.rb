@@ -202,6 +202,7 @@ module OmfRc::ResourceProxy::VM
 	property :edge, :default => 2
 	property :subnet, :default => 0
 	property :stage, :default => 0
+	property :put, :default => 0
 	property :repoList, :default => []
 
 	property :id
@@ -358,6 +359,10 @@ module OmfRc::ResourceProxy::VM
 
 	work :ccn_put_vm do |res|
 		res.send("ccn_put_file")
+		res.property.put = res.property.put + 1
+		res.membership.each do |m|
+			res.inform(:status, {uid: res.uid, put: res.property.put.to_i}, res.membership_topics[m])
+		end
 	end
 
 	work :get_name_vm do |res|
