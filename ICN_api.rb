@@ -146,6 +146,26 @@ defEvent :gw_set do |state|
 	end.size >= 1
 end
 
+defEvent :put_set do |state|
+	state.find_all do |v|
+		v[:type] == 'vm' && v[:put] && v[:put] == 1
+	end.size >= 1
+end
+
+setting = 0
+
+defEvent :network_prepared do
+	setting == 2
+end
+
+onEvent :vm_ccn_set do
+	setting = setting + 1
+end
+
+onEvent :gw_set do
+	setting = setting + 1
+end
+
 def gw_setting(g, id, from, to)
 	g.resources[uid: id].act = "gateway_init"
 	subnet = ARGV[-6].to_i
@@ -427,8 +447,25 @@ def ccn_get_via_gw(g, id, tf, bid, bpw, bip)
 end
 
 def get_video_via_ip(g1, g2, id, nip, nid, npw, gid, gpw, target_file, output_file)
+	prefix = ""
+	if ARGV[-6].to_i > 0
+		prefix = ARGV[-8]
+		subnet = ARGV[-6].to_i
+	elsif ARGV[-2].to_i > 0
+		prefix = ARGV[-4]
+	else
+		prefix = ARGV[-2]
+	end
+
 	ip = g2.resources[type: 'gw', uid: "#{id[0...-4]}_gw#{subnet}"].manageIP
-	g1.exec("sshpass -p #{npw} ssh -o StrictHostKeyChecking=no #{nid}@#{nip} \"sshpass -p #{gpw} ssh -o StrictHostKeyChecking=no #{gid}@#{ip} 'export PATH=$PATH:/usr/java/jdk1.7.0_07/bin;source /etc/profile;ccngetfile -v -unversioned #{target_file} #{output_file}; sshpass -p #{npw} scp #{output_file} #{nid}@#{nip}:/var/www/html/'\";mplayer http://#{nip}/#{output_file}")
+	ts = Time.now.to_i
+	info "Starting the ICN networking in ICN network for #{target_file} and video streaming"
+	g1.exec("export START_#{ts}=`date +'%s%N'`; sshpass -p #{npw} ssh -o StrictHostKeyChecking=no #{nid}@#{nip} \"if ! test -e /var/www/html/#{target_file}; then sshpass -p #{gpw} ssh -o StrictHostKeyChecking=no #{gid}@#{ip} 'export PATH=$PATH:/usr/java/jdk1.7.0_07/bin;source /etc/profile;ccngetfile -v -unversioned #{target_file} #{output_file}; sshpass -p #{npw} scp #{output_file} #{nid}@#{nip}:/var/www/html/'; fi;\"; export DISPLAY='localhost:10.0';mplayer http://#{nip}/#{output_file}; export END_#{ts}=`date +'%s%N'`; delay #{property.icn_server} #{property.icn_port} '`hostname`, `date +'%s'`, 'video streaming from the request to the response', `expr $(expr $END_#{ts} - $START_#{ts}) / 1000000`, ms")
+
+	result = `expr $(expr $END_#{ts} - $START_#{ts}) / 1000000`.to_s + "ms"
+	info "ccngetfile time: #{result}"
+
+	`unset END_#{ts}; unset START_#{ts}`
 end
 
 def ccn_video(g, c, video)
