@@ -116,28 +116,49 @@ module OmfRc::Util::Gwcontrol
   end
 
   work :ping_gw do |res|
-    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"ping -c 3 172.16.11.1\""
-    res.execute_cmd(cmd, "Ping to the gateway", "Failed", "Ping success!")
-  end
+    start_time = `date +"%s%N`
 
-  work :ccn_get_file do |res|
-    cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;
-	ccngetfile -v -unversioned ccnx:/snu.ac.kr/test.txt ./outfile\""
-    res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"ping -c 3 172.16.11.1\""
+    res.execute_cmd(cmd, "Ping to the gateway", "Failed", "Ping Success!")
+
+    end_time = `date +'%s%N'`
+    result = (end_time - start_time) / 1000000
+    title = "ping to the gateway three times"
+    unit = "ms"
+    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, #{title}, #{result}, #{unit}'"
+
+    logger.info "#{title}: #{result} #{unit}"
   end
 
   work :ccn_get_node do |res|
+    start_time = `date +"%s%N"`
     cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;
 	ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success!")
+    end_time = `date +"%s%N"`
+    result = (end_time - start_time) / 1000000
+    title = "ccngetfile time from #{res.property.vm_name} #{res.property.target_file}"
+    unit = "ms"
+    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, #{title}, #{result}, #{unit}'"
+
+    logger.info "#{title}: #{result} #{unit}"
   end
    
   work :ccn_get_via_gw do |res|
+    start_time = `date +"%s%N"`
     cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;
 	ccngetfile -v -unversioned #{res.property.target_file} ./outfile\""
     res.execute_cmd(cmd, "Getting the file from ccnx:/snu.ac.kr", "Failed", "ccnget success! now it will be sent back")
     cmd = "sshpass -p test #{SSH} -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -r ./outfile #{res.property.back_id}@#{res.property.back_address}:~/test/outfile\""
     res.execute_cmd(cmd, "Sending the file to #{res.property.back_address}", "Failed", "Sending success!")
+
+    end_time = `date +"%s%N"`
+    result = (end_time - start_time) / 1000000
+    title = "ccngetfile time from #{res.property.vm_name} #{res.property.target_file}"
+    unit = "ms"
+    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, #{title}, #{result}, #{unit}'"
+
+    logger.info "#{title}: #{result} #{unit}"
   end
 
   work :set_eth_gw do |res|

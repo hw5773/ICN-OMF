@@ -192,6 +192,8 @@ module OmfRc::ResourceProxy::VM
 	property :vmIP, :default => []
 	property :vmRT, :default => []
 	property :macAddress, :default => ""
+	property :server, :default => "147.46.216.250"
+	property :port, :default => "3333"
 
 	property :role
 	property :back

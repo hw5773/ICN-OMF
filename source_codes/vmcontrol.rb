@@ -219,64 +219,57 @@ module OmfRc::Util::Vmcontrol
   end
 
   work :ping_gw do |res|
-    f = File.open("./#{res.property.id}_result.log", "a")
-    f.write("ping to the gateway 3 times from #{res.property.sn} (#{res.property.vm_name})\n")
-    f.close
+    start_time = `date +"%s%N`
 
-    sleep(2.0)
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"ping -c 3 172.16.11.1\""
+    res.execute_cmd(cmd, "Ping to the gateway", "Failed", "Ping Success!")
 
-    `sshpass -p test scp -r ./#{res.property.id}_result.log root@#{res.property.manageIP}:~/`
-    `sudo mv ./#{res.property.id}_result.log #{res.property.id}_result.log.bak`
-    pwd = `pwd`[0...-1]
+    end_time = `date +'%s%N'`
+    result = (end_time - start_time) / 1000000
+    title = "ping to the gateway three times"
+    unit = "ms"
+    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, #{title}, #{result}, #{unit}'"
 
-    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"echo \'before ping\' >> #{res.property.id}_result.log;echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ping -c 3 172.16.11.1;echo \'after ping\' >> #{res.property.id}_result.log;echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
-    res.execute_cmd(cmd, "Ping to the gateway", "Failed", "Ping success!")
+	logger.info "#{title}: #{result} #{unit}"
+
   end
 
   work :ccn_get_file do |res|
-    f = File.open("./#{res.property.id}_result.log", "a")
-    f.write("request #{res.property.target_file} from #{res.property.sn} (#{res.property.vm_name})\n")
-    f.close
+	start_time = `date +"%s%N"`
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} #{res.property.output_file}\""
 
-    sleep(2.0)
-
-    `sshpass -p test scp -r #{res.property.id}_result.log root@#{res.property.manageIP}:~/`
-    `sudo mv ./#{res.property.id}_result.log #{res.property.id}_result.log.bak`
-    pwd = `pwd`[0...-1]
-    
-    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ccngetfile -v -unversioned #{res.property.target_file} #{res.property.output_file};echo \'after ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
     res.execute_cmd(cmd, "Getting the file #{res.property.target_file}", "Failed", "ccnget success!")
+	end_time = `date +"%s%N"`
+	result = (end_time - start_time) / 1000000
+	title = "ccngetfile time from #{res.property.vm_name} #{res.property.target_file}"
+	unit = "ms"
+    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, #{title}, #{result}, #{unit}'"
+
+	logger.info "#{title}: #{result} #{unit}"
   end
 
   work :ccn_get_ip do |res|
-    f = File.open("./#{res.property.id}_result.log", "a")
-    f.write("request #{res.property.target_file} and send back to IP network from #{res.property.sn} (#{res.property.vm_name})\n")
-    f.close
-
-    sleep(2.0)
-
-    `sshpass -p test scp -r ./#{res.property.id}_result.log root@#{res.property.manageIP}:~/`
-    `sudo mv ./#{res.property.id}_result.log #{res.property.id}_result.log.bak`
-    pwd = `pwd`[0...-1]
+	start_time = `date +"%s%N"`
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} #{res.property.output_file}\""
     
-    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;ccngetfile -v -unversioned #{res.property.target_file} #{res.property.output_file};echo \'after ccn get\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;\""
-    res.execute_cmd(cmd, "Getting the file #{res.property.target_file}", "Failed", "ccnget success! now it will be sent back")
-    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"echo \'before send the output file to IP network\' >> #{res.property.id}_result.log; echo \'`date +%s%N` ns\' >> #{res.property.id}_result.log; sshpass -p #{res.property.back_password} scp -r #{res.property.output_file} #{res.property.back_id}@#{res.property.back}:~/#{res.property.output_file}; echo \'after send the output file to IP network\' >> #{res.property.id}_result.log; echo \'`date +%s%N` ns\' >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/#{res.property.id}_result.log\""
+    result = res.execute_cmd(cmd, "Getting the file #{res.property.target_file}", "Failed", "ccnget success! now it will be sent back")
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -r #{res.property.output_file} #{res.property.back_id}@#{res.property.back}:~/#{res.property.output_file}\"" 
+	end_time =`date +'%s%N'`
+	cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, ccngetfile time from #{res.property.vm_name} for #{res.property.target_file}, `expr $(expr $END - $START) / 1000000`, ms'"
     res.execute_cmd(cmd, "Sending the file to #{res.property.back}", "Failed", "Sending success!")
   end
 
   work :ccn_put_file do |res|
-    f = File.open("./#{res.property.id}_result.log", "a")
-    f.write("put #{res.property.put_file} into ccnx:/#{res.property.repoName} from #{res.property.sn} (#{res.property.vm_name})\n")
-    f.close
-
-    sleep(2.0)
-
-    `sshpass -p test scp ./#{res.property.id}_result.log root@#{res.property.manageIP}:~/`
-    `sudo mv ./#{res.property.id}_result.log #{res.property.id}_result.log.bak`
-    pwd = `pwd`[0...-1]
-    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;echo \'before ccn put\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;cd ~;ccnputfile -v -unversioned ccnx:/#{res.property.repoName}/#{res.property.put_file} ~/#{res.property.put_file}; echo \'after ccn put\' >> #{res.property.id}_result.log; echo \"`date +%s%N` ns\" >> #{res.property.id}_result.log;sshpass -p #{res.property.password} scp -r #{res.property.id}_result.log #{res.property.id}@#{res.property.ip}:#{pwd}/\""
+	start_time = `date +"%s%N"`
+    cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile; cd ~; ccnputfile -v -unversioned ccnx:/#{res.property.repoName}/#{res.property.put_file} ~/#{res.property.put_file}\""
     res.execute_cmd(cmd, "Putting the file to ccnx:/#{res.property.repoName}/#{res.property.put_file}", "Failed", "ccnput success!")
+	end_time = `date +"%s%N"`
+	result = (end_time - start_time) / 1000000
+	title = "ccnputfile time for #{res.property.put_file} in #{res.property.repoName}"
+	unit = "ms"
+    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, #{title}, #{result}, #{unit}'"
+
+	logger.info "#{title}: #{result} #{unit}"
   end
 
   work :video_streaming do |res|
