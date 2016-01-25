@@ -219,12 +219,12 @@ module OmfRc::Util::Vmcontrol
   end
 
   work :ping_gw do |res|
-    start_time = `date +"%s%N`
+    start_time = `date +"%s%N`.to_i
 
     cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"ping -c 3 172.16.11.1\""
     res.execute_cmd(cmd, "Ping to the gateway", "Failed", "Ping Success!")
 
-    end_time = `date +'%s%N'`
+    end_time = `date +'%s%N'`.to_i
     result = (end_time - start_time) / 1000000
     title = "ping to the gateway three times"
     unit = "ms"
@@ -235,11 +235,11 @@ module OmfRc::Util::Vmcontrol
   end
 
   work :ccn_get_file do |res|
-	start_time = `date +"%s%N"`
+	start_time = `date +"%s%N"`.to_i
     cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} #{res.property.output_file}\""
 
     res.execute_cmd(cmd, "Getting the file #{res.property.target_file}", "Failed", "ccnget success!")
-	end_time = `date +"%s%N"`
+	end_time = `date +"%s%N"`.to_i
 	result = (end_time - start_time) / 1000000
 	title = "ccngetfile time from #{res.property.vm_name} #{res.property.target_file}"
 	unit = "ms"
@@ -249,25 +249,27 @@ module OmfRc::Util::Vmcontrol
   end
 
   work :ccn_get_ip do |res|
-	start_time = `date +"%s%N"`
+	start_time = `date +"%s%N"`.to_i
     cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile;ccngetfile -v -unversioned #{res.property.target_file} #{res.property.output_file}\""
     
     result = res.execute_cmd(cmd, "Getting the file #{res.property.target_file}", "Failed", "ccnget success! now it will be sent back")
     cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -r #{res.property.output_file} #{res.property.back_id}@#{res.property.back}:~/#{res.property.output_file}\"" 
-	end_time =`date +'%s%N'`
+	end_time =`date +'%s%N'`.to_i
 	cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, ccngetfile time from #{res.property.vm_name} for #{res.property.target_file}, `expr $(expr $END - $START) / 1000000`, ms'"
     res.execute_cmd(cmd, "Sending the file to #{res.property.back}", "Failed", "Sending success!")
   end
 
   work :ccn_put_file do |res|
-	start_time = `date +"%s%N"`
+	start_time = `date +"%s%N"`.to_i
     cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"export PATH=$PATH:/usr/java/jdk1.7.0_07/bin:/usr/local/apache-ant-1.9.4/bin;source /etc/profile; cd ~; ccnputfile -v -unversioned ccnx:/#{res.property.repoName}/#{res.property.put_file} ~/#{res.property.put_file}\""
     res.execute_cmd(cmd, "Putting the file to ccnx:/#{res.property.repoName}/#{res.property.put_file}", "Failed", "ccnput success!")
-	end_time = `date +"%s%N"`
+	end_time = `date +"%s%N"`.to_i
 	result = (end_time - start_time) / 1000000
 	title = "ccnputfile time for #{res.property.put_file} in #{res.property.repoName}"
 	unit = "ms"
     cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, #{title}, #{result}, #{unit}'"
+
+    res.execute_cmd(cmd, "Send the log message to ICN Measurement Server", "Failed", "Send the log message to ICN Measurement Server: #{title} #{result} #{unit}")
 
 	logger.info "#{title}: #{result} #{unit}"
   end
