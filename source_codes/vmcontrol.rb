@@ -228,7 +228,8 @@ module OmfRc::Util::Vmcontrol
     result = (end_time - start_time) / 1000000
     title = "ping to the gateway three times"
     unit = "ms"
-    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, #{title}, #{result}, #{unit}'"
+	cur_time = `date +"%s"`.to_i
+    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, #{cur_time}, #{title}, #{result}, #{unit}'"
 
 	logger.info "#{title}: #{result} #{unit}"
 
@@ -243,7 +244,8 @@ module OmfRc::Util::Vmcontrol
 	result = (end_time - start_time) / 1000000
 	title = "ccngetfile time from #{res.property.vm_name} #{res.property.target_file}"
 	unit = "ms"
-    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, #{title}, #{result}, #{unit}'"
+	cur_time = `date +"%s"`.to_i
+    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, #{cur_time}, #{title}, #{result}, #{unit}'"
 
 	logger.info "#{title}: #{result} #{unit}"
   end
@@ -255,7 +257,8 @@ module OmfRc::Util::Vmcontrol
     result = res.execute_cmd(cmd, "Getting the file #{res.property.target_file}", "Failed", "ccnget success! now it will be sent back")
     cmd = "sshpass -p test #{SSH} -X -o StrictHostKeyChecking=no root@#{res.property.manageIP} \"sshpass -p #{res.property.back_password} scp -r #{res.property.output_file} #{res.property.back_id}@#{res.property.back}:~/#{res.property.output_file}\"" 
 	end_time =`date +'%s%N'`.to_i
-	cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, ccngetfile time from #{res.property.vm_name} for #{res.property.target_file}, `expr $(expr $END - $START) / 1000000`, ms'"
+	cur_time = `date +"%s"`.to_i
+	cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, #{cur_time}, ccngetfile time from #{res.property.vm_name} for #{res.property.target_file}, `expr $(expr $END - $START) / 1000000`, ms'"
     res.execute_cmd(cmd, "Sending the file to #{res.property.back}", "Failed", "Sending success!")
   end
 
@@ -267,7 +270,8 @@ module OmfRc::Util::Vmcontrol
 	result = (end_time - start_time) / 1000000
 	title = "ccnputfile time for #{res.property.put_file} in #{res.property.repoName}"
 	unit = "ms"
-    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, `date +'%s'`, #{title}, #{result}, #{unit}'"
+	cur_time = `date +"%s"`.to_i
+    cmd = "delay #{res.property.server} #{res.property.port} '#{res.property.vm_name}, #{cur_time}, #{title}, #{result}, #{unit}'"
 
     res.execute_cmd(cmd, "Send the log message to ICN Measurement Server", "Failed", "Send the log message to ICN Measurement Server: #{title} #{result} #{unit}")
 
